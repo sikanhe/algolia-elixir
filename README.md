@@ -83,7 +83,7 @@ inside object, or use the `id_attribute` option (see below)
 
 ```elixir
     "my_index" |> save_object(%{objectID: "1"})
-```elixir
+```
 
 Save a single object with a given objectID
 
