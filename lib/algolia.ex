@@ -60,6 +60,9 @@ defmodule Algolia do
       "X-Algolia-Application-Id": @application_id
     ]
 
+    IO.inspect(url)
+    IO.inspect(headers)
+
     :hackney.request(method, url, headers, body, [
       :with_body,
       path_encode_fun: &(&1),
