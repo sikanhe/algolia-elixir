@@ -146,6 +146,25 @@ defmodule Algolia do
     |> inject_index_into_response(index)
   end
 
+  @doc """
+  Partially updates multiple objects
+  """
+  def partial_update_objects(index, objects, opts \\ [upsert?: true, id_attribute: :objectID]) do
+    id_attribute = opts[:id_attribute] || :objectID
+
+    upsert = case opts[:upsert?] do
+      false -> false
+      _ -> true
+    end
+
+    action = if upsert, do: "partialUpdateObject", else: "partialUpdateObjectNoCreate"
+
+    objects
+    |> add_object_ids(id_attribute: id_attribute)
+    |> build_batch_request(action, with_object_id: true)
+    |> send_batch_request(index)
+  end
+
   # No need to add any objectID by default
   defp add_object_ids(objects, id_attribute: :objectID), do: objects
   defp add_object_ids(objects, id_attribute: "objectID"), do: objects
@@ -221,6 +240,13 @@ defmodule Algolia do
     end)
     |> build_batch_request("deleteObject", with_object_id: true)
     |> send_batch_request(index)
+  end
+
+  @doc """
+  List all indexes
+  """
+  def list_indexes do
+    send_request(:read, :get, "")
   end
 
   @doc """

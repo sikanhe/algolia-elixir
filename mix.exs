@@ -14,7 +14,7 @@ defmodule Algolia.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger]]
+    [applications: [:logger, :hackney]]
   end
 
   # Dependencies can be Hex packages:
@@ -27,6 +27,6 @@ defmodule Algolia.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [{:hackney, github: "benoitc/hackney"}]
   end
 end

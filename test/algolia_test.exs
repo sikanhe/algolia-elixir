@@ -4,7 +4,7 @@ defmodule AlgoliaTest do
   import Algolia
 
   @indexes [
-    "test_1", "test_2", "test_3",
+    "test", "test_1", "test_2", "test_3",
     "move_index_test_src", "move_index_test_dst",
     "copy_index_src", "copy_index_dst"
   ]
@@ -14,7 +14,12 @@ defmodule AlgoliaTest do
     |> Enum.map(&clear_index/1)
     |> Enum.each(&wait/1)
 
-    :timer.sleep(2000)
+    :timer.sleep(1000)
+  end
+
+  test "list all indexes" do
+    {:ok, %{"items" => items}} = list_indexes
+    assert length(items) === length(@indexes)
   end
 
   test "wait task" do
@@ -47,6 +52,8 @@ defmodule AlgoliaTest do
 
     {:ok, _} = save_objects("test_2", docs, id_attribute: :id)
     |> wait
+
+    :timer.sleep(1000)
 
     {:ok, %{"hits" => hits1}} = search("test_2", "search single index")
     assert length(hits1) === count
@@ -149,6 +156,37 @@ defmodule AlgoliaTest do
     assert {:error, 404, _} = get_object("test_3", id)
   end
 
+  test "partially update multiple objects, upsert is default" do
+    id = "partial_update_upsert_false"
+
+    objects = [%{id: "partial_update_multiple_1"}, %{id: "partial_update_multiple_2"}]
+
+    assert {:ok, _} =
+      partial_update_objects("test_3", objects, id_attribute: :id)
+      |> wait
+
+    :timer.sleep(2_000)
+
+    assert {:ok, _} = get_object("test_3", "partial_update_multiple_1")
+    assert {:ok, _} = get_object("test_3", "partial_update_multiple_2")
+  end
+
+  test "partially update multiple objects, upsert is false" do
+    id = "partial_update_upsert_false"
+
+    objects = [%{id: "partial_update_multiple_1_no_upsert"},
+               %{id: "partial_update_multiple_2_no_upsert"}]
+
+    assert {:ok, _} =
+      partial_update_objects("test_3", objects, id_attribute: :id, upsert?: false)
+      |> wait
+
+    :timer.sleep(2_000)
+
+    assert {:error, 404, _} = get_object("test_3", "partial_update_multiple_1_no_upsert")
+    assert {:error, 404, _} = get_object("test_3", "partial_update_multiple_2_no_upsert")
+  end
+
   test "delete object" do
     {:ok, %{"objectID" => object_id}} =
       save_object("test_1", %{id: "delete_object"}, id_attribute: :id)
@@ -156,7 +194,7 @@ defmodule AlgoliaTest do
 
     delete_object("test_1", object_id) |> wait
 
-    assert {:error, 404, _} = get_object("test_1", object_id)
+    assert {:error, 404, _} = get_object("test_1", object_id) |> IO.inspect
   end
 
   test "delete multiple objects" do
