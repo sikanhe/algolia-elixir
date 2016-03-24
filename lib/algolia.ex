@@ -91,7 +91,6 @@ defmodule Algolia do
       |> Path.join(host(read_or_write, curr_retry))
       |> Path.join("/1/indexes")
       |> Path.join(path)
-      |> IO.inspect
 
     headers = [
       "X-Algolia-API-Key": @api_key,
