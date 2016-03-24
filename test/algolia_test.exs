@@ -47,26 +47,26 @@ defmodule AlgoliaTest do
   test "search single index" do
     :random.seed(:erlang.timestamp)
     count = :random.uniform 10
-    docs = Enum.map(1..count, &(%{id: &1, test: "search single index"}))
+    docs = Enum.map(1..count, &(%{id: &1, test: "search_single_index"}))
 
     {:ok, _} = save_objects("test_3", docs, id_attribute: :id)
     |> wait
 
     :timer.sleep(5_000)
 
-    {:ok, %{"hits" => hits1}} = search("test_3", "search single index")
+    {:ok, %{"hits" => hits1}} = search("test_3", "search_single_index")
     assert length(hits1) === count
   end
 
   test "search > 1 pages" do
-    docs = Enum.map(1..40, &(%{id: &1, test: "search pages"}))
+    docs = Enum.map(1..40, &(%{id: &1, test: "search_more_than_one_pages"}))
 
     {:ok, _} = save_objects("test_3", docs, id_attribute: :id) |> wait
 
     :timer.sleep(5_000)
 
     {:ok, results = %{"hits" => hits, "page" => page}} =
-      search("test_3", "search pages", page: 1)
+      search("test_3", "search_more_than_one_pages", page: 1)
 
     assert page == 1
     assert length(hits) === 20
@@ -82,7 +82,7 @@ defmodule AlgoliaTest do
 
       :timer.sleep(5_000)
 
-    queries = format_multi_index_queries("search multiple indexes", @indexes)
+    queries = format_multi_index_queries("search_multiple_indexes", @indexes)
     {:ok, body} = search(queries)
 
     results = body["results"]
@@ -101,7 +101,7 @@ defmodule AlgoliaTest do
     :random.seed(:erlang.timestamp)
     count = :random.uniform(3)
 
-    objects = Enum.map(1..count, &(%{objectID: &1, test: "search multiple indexes"}))
+    objects = Enum.map(1..count, &(%{objectID: &1, test: "search_multiple_indexes"}))
 
     save_objects(index, objects) |> wait(3_000)
 
