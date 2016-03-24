@@ -53,7 +53,7 @@ All functions are serialized into maps before returning these responses
 With Options
 
 ```elixir
-    "my_index" |> search("some query", %{"attributesToRetrieve" => "firstname", "hitsPerPage" => 20})
+    "my_index" |> search("some query", %{attributesToRetrieve: "firstname", hitsPerPage: 20})
 ```
 
 See all available search options [**here**](https://www.algolia.com/doc/rest#full-text-search-parameters)
@@ -61,9 +61,9 @@ See all available search options [**here**](https://www.algolia.com/doc/rest#ful
 #### Multiple queries at once
 
 ```elixir
-    multi([%{"indexName" => "my_index1", "query" => "search query"},
-            %{"indexName" => "my_index2", "query" => "another query", "hitsPerPage" => 3,},
-            %{"indexName" => "my_index3", "query" => "3rd query", "tagFilters" => "promotion"}])
+    multi([%{index_name => "my_index1", query: "search query"},
+            %{index_name => "my_index2", query: "another query", hitsPerPage: 3,},
+            %{index_name => "my_index3", query: "3rd query", tagFilters: "promotion"}])
 ```
 
 You can specify a strategy to optimize your multiple queries
