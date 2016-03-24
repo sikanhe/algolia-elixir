@@ -1,0 +1,648 @@
+    <!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.11.4">
+    <title>Algolia – algolia v0.2.0</title>
+    <link rel="stylesheet" href="dist/app-1e374caa3d.css" />
+    <script src="dist/sidebar_items.js"></script>
+  </head>
+  <body data-type="modules">
+
+    <div class="main">
+<button class="sidebar-toggle">
+  <i class="icon-menu"></i>
+</button>
+<section class="sidebar">
+  <button class="sidebar-toggle">
+    <i class="icon-menu"></i>
+  </button>
+
+  
+  <a href="api-reference.html" class="sidebar-projectLink">
+    <div class="sidebar-projectDetails">
+      <h1 class="sidebar-projectName">
+        algolia
+      </h1>
+      <h2 class="sidebar-projectVersion">
+        v0.2.0
+      </h2>
+    </div>
+    
+  </a>
+
+  <div class="sidebar-search">
+    <i class="icon-search"></i>
+    <input type="text" class="sidebar-searchInput" placeholder="search" autocomplete="off" />
+  </div>
+
+  <ul class="sidebar-listNav">
+    <li><a id="extras-list" href="#full-list">Pages</a></li>
+
+    
+      <li><a id="modules-list" href="#full-list">Modules</a></li>
+    
+
+    
+
+    
+  </ul>
+
+  <ul id="full-list" class="sidebar-fullList"></ul>
+  <div class="sidebar-noResults"></div>
+</section>
+
+<section class="content">
+  <div id="content" class="content-inner">
+
+
+      <h1>
+        <small class="visible-xs">algolia v0.2.0</small>
+        Algolia
+        
+        
+      </h1>
+
+      
+        <section id="moduledoc" class="docstring">
+          <p>Elixir implementation of Algolia search API, using Hackney for http requests</p>
+
+        </section>
+      
+
+      
+        <section id="summary" class="details-list">
+          <h1 class="section-heading">
+            <a class="hover-link" href="#summary">
+              <i class="icon-link"></i>
+            </a>
+            Summary
+          </h1>
+          
+
+          
+  <div class="summary-functions summary">
+    <h2>
+      <a href="#functions">Functions</a>
+    </h2>
+    <div class="summary-row">
+  <div class="summary-signature">
+    <a href="#clear_index/1">clear_index(index)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Clears all content of an index</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#copy_index/2">copy_index(src_index, dst_index)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Copies an index to a new one</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#delete_object/2">delete_object(index, object_id)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Delete a object by its objectID</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#delete_objects/2">delete_objects(index, object_ids)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Delete multiple objects</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#format_multi_params/1">format_multi_params(query)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#get_object/2">get_object(index, object_id)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Get an object in an index by objectID</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#get_settings/1">get_settings(index)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Get the settings of a index</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#list_indexes/0">list_indexes()</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>List all indexes</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#move_index/2">move_index(src_index, dst_index)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Moves an index to new one</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#multi/2">multi(queries, opts \\ [strategy: :none])</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Multiple queries</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#partial_update_object/3">partial_update_object(index, object, object_id)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Partially updates an object, takes option upsert: true or false</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#partial_update_object/4">partial_update_object(index, object, object_id, list)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#partial_update_objects/3">partial_update_objects(index, objects, opts \\ [upsert?: true, id_attribute: :objectID])</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Partially updates multiple objects</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#save_object/2">save_object(index, object)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#save_object/3">save_object(index, object, object_id)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Save a single object, without objectID specified, must have objectID as
+a field</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#save_objects/2">save_objects(index, objects)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Save multiple objects</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#save_objects/3">save_objects(index, objects, list)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#search/2">search(index, query)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#search/3">search(index, query, opts)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Search a single index</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#set_settings/2">set_settings(index, settings)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Set the settings of a index</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#wait/1">wait(response)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#wait/2">wait(arg, time_before_retry)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Convinient version of wait<em>task/4, accepts a response to be waited on
+directly. This enables piping a operation directly into wait</em>task</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#wait_task/3">wait_task(index, task_id, time_before_retry \\ 1000)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Wait for a task for an index to complete
+returns :ok when it&#39;s done</p>
+</div>
+  
+</div>
+
+  </div>
+
+
+          
+
+          
+
+        </section>
+      
+
+      
+
+      
+        <section id="functions" class="details-list">
+          <h1 class="section-heading">
+            <a class="hover-link" href="#functions">
+              <i class="icon-link"></i>
+            </a>
+            Functions
+          </h1>
+          <div class="detail" id="clear_index/1">
+  <div class="detail-header">
+    <a href="#clear_index/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">clear_index(index)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Clears all content of an index</p>
+
+  </section>
+</div>
+<div class="detail" id="copy_index/2">
+  <div class="detail-header">
+    <a href="#copy_index/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">copy_index(src_index, dst_index)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Copies an index to a new one</p>
+
+  </section>
+</div>
+<div class="detail" id="delete_object/2">
+  <div class="detail-header">
+    <a href="#delete_object/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">delete_object(index, object_id)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Delete a object by its objectID</p>
+
+  </section>
+</div>
+<div class="detail" id="delete_objects/2">
+  <div class="detail-header">
+    <a href="#delete_objects/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">delete_objects(index, object_ids)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Delete multiple objects</p>
+
+  </section>
+</div>
+<div class="detail" id="format_multi_params/1">
+  <div class="detail-header">
+    <a href="#format_multi_params/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">format_multi_params(query)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="get_object/2">
+  <div class="detail-header">
+    <a href="#get_object/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">get_object(index, object_id)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Get an object in an index by objectID</p>
+
+  </section>
+</div>
+<div class="detail" id="get_settings/1">
+  <div class="detail-header">
+    <a href="#get_settings/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">get_settings(index)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Get the settings of a index</p>
+
+  </section>
+</div>
+<div class="detail" id="list_indexes/0">
+  <div class="detail-header">
+    <a href="#list_indexes/0" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">list_indexes()</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>List all indexes</p>
+
+  </section>
+</div>
+<div class="detail" id="move_index/2">
+  <div class="detail-header">
+    <a href="#move_index/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">move_index(src_index, dst_index)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Moves an index to new one</p>
+
+  </section>
+</div>
+<div class="detail" id="multi/2">
+  <div class="detail-header">
+    <a href="#multi/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">multi(queries, opts \\ [strategy: :none])</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Multiple queries</p>
+
+  </section>
+</div>
+<div class="detail" id="partial_update_object/3">
+  <div class="detail-header">
+    <a href="#partial_update_object/3" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">partial_update_object(index, object, object_id)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Partially updates an object, takes option upsert: true or false</p>
+
+  </section>
+</div>
+<div class="detail" id="partial_update_object/4">
+  <div class="detail-header">
+    <a href="#partial_update_object/4" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">partial_update_object(index, object, object_id, list)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="partial_update_objects/3">
+  <div class="detail-header">
+    <a href="#partial_update_objects/3" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">partial_update_objects(index, objects, opts \\ [upsert?: true, id_attribute: :objectID])</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Partially updates multiple objects</p>
+
+  </section>
+</div>
+<div class="detail" id="save_object/2">
+  <div class="detail-header">
+    <a href="#save_object/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">save_object(index, object)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="save_object/3">
+  <div class="detail-header">
+    <a href="#save_object/3" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">save_object(index, object, object_id)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Save a single object, without objectID specified, must have objectID as
+a field</p>
+
+  </section>
+</div>
+<div class="detail" id="save_objects/2">
+  <div class="detail-header">
+    <a href="#save_objects/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">save_objects(index, objects)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Save multiple objects</p>
+
+  </section>
+</div>
+<div class="detail" id="save_objects/3">
+  <div class="detail-header">
+    <a href="#save_objects/3" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">save_objects(index, objects, list)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="search/2">
+  <div class="detail-header">
+    <a href="#search/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">search(index, query)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="search/3">
+  <div class="detail-header">
+    <a href="#search/3" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">search(index, query, opts)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Search a single index</p>
+
+  </section>
+</div>
+<div class="detail" id="set_settings/2">
+  <div class="detail-header">
+    <a href="#set_settings/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">set_settings(index, settings)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Set the settings of a index</p>
+
+  </section>
+</div>
+<div class="detail" id="wait/1">
+  <div class="detail-header">
+    <a href="#wait/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">wait(response)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="wait/2">
+  <div class="detail-header">
+    <a href="#wait/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">wait(arg, time_before_retry)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Convinient version of wait<em>task/4, accepts a response to be waited on
+directly. This enables piping a operation directly into wait</em>task</p>
+
+  </section>
+</div>
+<div class="detail" id="wait_task/3">
+  <div class="detail-header">
+    <a href="#wait_task/3" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">wait_task(index, task_id, time_before_retry \\ 1000)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Wait for a task for an index to complete
+returns :ok when it&#39;s done</p>
+
+  </section>
+</div>
+
+        </section>
+      
+
+      
+
+      
+        <footer class="footer">
+      <p>
+        <span class="line">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" rel="help" target="_blank">ExDoc</a> (v0.11.4),
+        </span>
+        <span class="line">
+          designed by
+          <a href="https://twitter.com/dignifiedquire" target="_blank" title="@dignifiedquire">Friedel Ziegelmayer</a>.
+          </span>
+      </p>
+      <button class="night-mode-toggle" />
+    </footer>
+  </div>
+</section>
+</div>
+  <script src="dist/app-6d2e071366.js"></script>
+  </body>
+</html>
+

@@ -138,7 +138,8 @@ defmodule Algolia do
   Save a single object, without objectID specified, must have objectID as
   a field
   """
-  def save_object(index, object, id_attribute: id_attribute) do
+  def save_object(index, object, opts \\ [id_attribute: :objectID]) do
+    id_attribute = opts[:id_attribute]
     object_id = object[id_attribute] || object[to_string id_attribute]
 
     if !object_id do
@@ -147,15 +148,12 @@ defmodule Algolia do
 
     save_object(index, object, object_id)
   end
-  def save_object(index, object),
-    do: save_object(index, object, id_attribute: :objectID)
 
   @doc """
   Save multiple objects
   """
-  def save_objects(index, objects),
-    do: save_objects(index, objects, id_attribute: :objectID)
-  def save_objects(index, objects, id_attribute: id_attribute) when is_list(objects) do
+  def save_objects(index, objects, opts \\ [id_attribute: :objectID]) when is_list(objects) do
+    id_attribute = opts[:id_attribute]
     objects
     |> add_object_ids(id_attribute: id_attribute)
     |> build_batch_request("updateObject", with_object_id: true)
@@ -165,12 +163,10 @@ defmodule Algolia do
   @doc """
   Partially updates an object, takes option upsert: true or false
   """
-  def partial_update_object(index, object, object_id),
-    do: partial_update_object(index, object, object_id, upsert?: true)
-  def partial_update_object(index, object, object_id, upsert?: upsert) do
+  def partial_update_object(index, object, object_id, opts \\ upsert?: true) do
     body = object |> Poison.encode!
 
-    params = if upsert do
+    params = if opts[:upsert?] do
       ""
     else
       "?createIfNotExists=false"
