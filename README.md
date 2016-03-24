@@ -25,7 +25,6 @@ This is the elixir implementation of Algolia search API
 - [ ] delete_user_key
 
 
-
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
