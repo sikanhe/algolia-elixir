@@ -260,10 +260,10 @@ Example response
 
 ```elixir
     set_settings(index, %{"hitsPerPage" => 20})
-    > %{"updatedAt" => "2013-08-21T13:20:18.960Z",
+
+     > %{"updatedAt" => "2013-08-21T13:20:18.960Z",
         "taskID" => 10210332.
         "indexName" => "my_index"}
-}
 ```
 ### TODOS:
 
