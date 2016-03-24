@@ -2,6 +2,23 @@
 
 This is the elixir implementation of Algolia search API, it is purely functional
 
+Note, in order to get the multiple indexes working, we have to use the latest branch for Hackney
+
+```elixir
+  defp deps do
+    [{:hackney, github: "benoitc/hackney"}]
+  end
+```
+
+add :hackney to your applications
+
+```elixir
+  def application do
+    [applications: [:logger, :hackney]]
+  end
+```
+
+
 ## Configuration
 
 #### Using environment variables:
