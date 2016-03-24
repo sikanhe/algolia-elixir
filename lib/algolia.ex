@@ -63,7 +63,7 @@ defmodule Algolia do
     :hackney.request(method, url, headers, body, [
       :with_body,
       path_encode_fun: &(&1),
-      connect_timeout: 2_000 * (curr_retry + 1),
+      connect_timeout: 10_000 * (curr_retry + 1),
       recv_timeout: 30_000 * (curr_retry + 1),
     ])
     |> case do
