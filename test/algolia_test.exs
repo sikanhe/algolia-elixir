@@ -76,7 +76,7 @@ defmodule AlgoliaTest do
 
 
     queries = format_multi_index_queries("search_multiple_indexes", @indexes)
-    {:ok, body} = search(queries)
+    {:ok, body} = multi(queries)
 
     results = body["results"]
 
@@ -102,10 +102,9 @@ defmodule AlgoliaTest do
   end
 
   defp format_multi_index_queries(query, indexes) do
-    requests = Enum.map indexes, fn(index) ->
-      %{indexName: index, params: "query=#{query}"}
+    Enum.map indexes, fn(index) ->
+      %{index_name: index, query: query}
     end
-    %{ requests: requests }
   end
 
   test "partially update object" do

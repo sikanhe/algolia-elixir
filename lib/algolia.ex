@@ -14,13 +14,50 @@ defmodule Algolia do
     do: "#{@application_id}-#{curr_retry}.algolianet.com"
 
   @doc """
-  Search multiple indexes
+  Multiple queries
   """
-  def search(queries) do
-    body = Poison.encode! queries
-    path = "*/queries"
+  def multi(queries, opts \\ [strategy: :none]) do
+    strategy = opts[:strategy]
+
+    params = case strategy do
+      :none -> "?strategy=none"
+      :stop_if_enough_matches -> "?strategy=stopIfEnoughMatches"
+      _ -> ""
+    end
+
+    path = "*/queries" <> params
+    body = Poison.encode! format_multi(queries)
 
     send_request(:read, :post, path, body)
+  end
+
+  defp format_multi(queries) do
+    requests = Enum.map queries, fn(query) ->
+      index_name = query[:index_name] || query["index_name"]
+
+      if !index_name,
+        do: raise ArgumentError, message: "Missing index_name for one of the multiple queries"
+
+      params =
+        query
+        |> Map.delete(:index_name)
+        |> Map.delete("index_name")
+        |> format_multi_params
+
+      %{indexName: index_name, params: params }
+    end
+
+    %{ requests: requests }
+  end
+
+
+  def format_multi_params(query) do
+    query
+    |> Stream.map(fn {k, v} ->
+      "#{k}=#{v}"
+    end)
+    |> Enum.join("&")
+    |> URI.encode
   end
 
   @doc """
