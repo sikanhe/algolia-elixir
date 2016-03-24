@@ -176,17 +176,11 @@
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="#partial_update_object/3">partial_update_object(index, object, object_id)</a>
+    <a href="#partial_update_object/4">partial_update_object(index, object, object_id, opts \\ [upsert?: true])</a>
   </div>
   
     <div class="summary-synopsis"><p>Partially updates an object, takes option upsert: true or false</p>
 </div>
-  
-</div>
-<div class="summary-row">
-  <div class="summary-signature">
-    <a href="#partial_update_object/4">partial_update_object(index, object, object_id, list)</a>
-  </div>
   
 </div>
 <div class="summary-row">
@@ -196,12 +190,6 @@
   
     <div class="summary-synopsis"><p>Partially updates multiple objects</p>
 </div>
-  
-</div>
-<div class="summary-row">
-  <div class="summary-signature">
-    <a href="#save_object/2">save_object(index, object)</a>
-  </div>
   
 </div>
 <div class="summary-row">
@@ -216,17 +204,11 @@ a field</p>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="#save_objects/2">save_objects(index, objects)</a>
+    <a href="#save_objects/3">save_objects(index, objects, opts \\ [id_attribute: :objectID])</a>
   </div>
   
     <div class="summary-synopsis"><p>Save multiple objects</p>
 </div>
-  
-</div>
-<div class="summary-row">
-  <div class="summary-signature">
-    <a href="#save_objects/3">save_objects(index, objects, list)</a>
-  </div>
   
 </div>
 <div class="summary-row">
@@ -439,31 +421,18 @@ returns :ok when it&#39;s done</p>
 
   </section>
 </div>
-<div class="detail" id="partial_update_object/3">
+<div class="detail" id="partial_update_object/4">
   <div class="detail-header">
-    <a href="#partial_update_object/3" class="detail-link" title="Link to this function">
+    <a href="#partial_update_object/4" class="detail-link" title="Link to this function">
       <i class="icon-link"></i>
     </a>
-    <span class="signature">partial_update_object(index, object, object_id)</span>
+    <span class="signature">partial_update_object(index, object, object_id, opts \\ [upsert?: true])</span>
       
   </div>
   
   <section class="docstring">
     <p>Partially updates an object, takes option upsert: true or false</p>
 
-  </section>
-</div>
-<div class="detail" id="partial_update_object/4">
-  <div class="detail-header">
-    <a href="#partial_update_object/4" class="detail-link" title="Link to this function">
-      <i class="icon-link"></i>
-    </a>
-    <span class="signature">partial_update_object(index, object, object_id, list)</span>
-      
-  </div>
-  
-  <section class="docstring">
-    
   </section>
 </div>
 <div class="detail" id="partial_update_objects/3">
@@ -478,19 +447,6 @@ returns :ok when it&#39;s done</p>
   <section class="docstring">
     <p>Partially updates multiple objects</p>
 
-  </section>
-</div>
-<div class="detail" id="save_object/2">
-  <div class="detail-header">
-    <a href="#save_object/2" class="detail-link" title="Link to this function">
-      <i class="icon-link"></i>
-    </a>
-    <span class="signature">save_object(index, object)</span>
-      
-  </div>
-  
-  <section class="docstring">
-    
   </section>
 </div>
 <div class="detail" id="save_object/3">
@@ -508,31 +464,18 @@ a field</p>
 
   </section>
 </div>
-<div class="detail" id="save_objects/2">
+<div class="detail" id="save_objects/3">
   <div class="detail-header">
-    <a href="#save_objects/2" class="detail-link" title="Link to this function">
+    <a href="#save_objects/3" class="detail-link" title="Link to this function">
       <i class="icon-link"></i>
     </a>
-    <span class="signature">save_objects(index, objects)</span>
+    <span class="signature">save_objects(index, objects, opts \\ [id_attribute: :objectID])</span>
       
   </div>
   
   <section class="docstring">
     <p>Save multiple objects</p>
 
-  </section>
-</div>
-<div class="detail" id="save_objects/3">
-  <div class="detail-header">
-    <a href="#save_objects/3" class="detail-link" title="Link to this function">
-      <i class="icon-link"></i>
-    </a>
-    <span class="signature">save_objects(index, objects, list)</span>
-      
-  </div>
-  
-  <section class="docstring">
-    
   </section>
 </div>
 <div class="detail" id="search/2">

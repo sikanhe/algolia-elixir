@@ -163,7 +163,7 @@ defmodule Algolia do
   @doc """
   Partially updates an object, takes option upsert: true or false
   """
-  def partial_update_object(index, object, object_id, opts \\ upsert?: true) do
+  def partial_update_object(index, object, object_id, opts \\ [upsert?: true]) do
     body = object |> Poison.encode!
 
     params = if opts[:upsert?] do
