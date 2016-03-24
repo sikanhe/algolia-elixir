@@ -60,16 +60,12 @@ defmodule Algolia do
       "X-Algolia-Application-Id": @application_id
     ]
 
-    IO.inspect(url)
-    IO.inspect(headers)
-
     :hackney.request(method, url, headers, body, [
       :with_body,
       path_encode_fun: &(&1),
-      connect_timeout: 10_000 * (curr_retry + 1),
+      connect_timeout: 3_000 * (curr_retry + 1),
       recv_timeout: 30_000 * (curr_retry + 1),
     ])
-    |> IO.inspect
     |> case do
       {:ok, 200, _headers, body} ->
         {:ok, body |> Poison.decode!}
