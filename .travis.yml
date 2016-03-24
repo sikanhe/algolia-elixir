@@ -3,7 +3,6 @@ elixir:
   - 1.2.1
 otp_release:
   - 18.0
-  - 18.1
 sudo: required
 install:
   - mix local.hex --force

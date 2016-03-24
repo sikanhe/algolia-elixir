@@ -6,13 +6,8 @@ defmodule Algolia do
   @application_id  Application.fetch_env!(:algolia, :application_id)
   @api_key         Application.fetch_env!(:algolia, :api_key)
 
-  defp host(:read, 0) do
-    if System.get_env("MIX_ENV") == :test do
-      "#{@application_id}.algolia.net"
-    else
-      "#{@application_id}-dsn.algolia.net"
-    end
-  end
+  defp host(:read, 0),
+    do: "#{@application_id}-dsn.algolia.net"
   defp host(:write, 0),
     do: "#{@application_id}.algolia.net"
   defp host(_read_or_write, curr_retry) when curr_retry <= 3,
