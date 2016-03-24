@@ -3,9 +3,8 @@ defmodule Algolia do
   Elixir implementation of Algolia search API, using Hackney for http requests
   """
 
-  @settings Application.fetch_env!(:algolia, Algolia)
-  @application_id  @settings |> Keyword.fetch!(:application_id)
-  @api_key         @settings |> Keyword.fetch!(:api_key)
+  @application_id  Application.fetch_env!(:algolia, :application_id)
+  @api_key         Application.fetch_env!(:algolia, :api_key)
 
   defp host(:read, 0),
     do: "#{@application_id}-dsn.algolia.net"
