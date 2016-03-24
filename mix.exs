@@ -36,7 +36,7 @@ defmodule Algolia.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:hackney, github: "benoitc/hackney", override: true},
+    [{:hackney, github: "benoitc/hackney"},
      {:poison, "~> 1.5"},
      {:excoveralls, "~> 0.5.1", only: :test},
      {:ex_doc, "~> 0.11", only: :dev},
