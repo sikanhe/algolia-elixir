@@ -2,11 +2,30 @@
 
 This is the elixir implementation of Algolia search API, it is purely functional
 
-Note, in order to get the multi-index queries working, we have to use the latest branch for Hackney
+Add to your dependencies
+
 
 ```elixir
   defp deps do
-    [{:hackney, github: "benoitc/hackney"}]
+    [{:algolia, "~> 0.2.0"}]
+  end
+```
+
+Start the app
+
+```elixir
+  def application do
+    [applications: [:logger, :algolia]]
+  end
+```
+
+Note, in order to get the multi-index queries working, we have to use the latest
+branch for Hackney. This will be unnecessary soon when we get a version bump.
+
+```elixir
+  defp deps do
+    [{:algolia, "~> 0.2.0"},
+     {:hackney, github: "benoitc/hackney"}]
   end
 ```
 
@@ -14,7 +33,7 @@ add :hackney to your applications
 
 ```elixir
   def application do
-    [applications: [:logger, :hackney]]
+    [applications: [:logger, :algolia, :hackney]]
   end
 ```
 
