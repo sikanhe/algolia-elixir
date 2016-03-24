@@ -1,6 +1,6 @@
 ##
   Algolia
-  [![Build Status](https://travis-ci.org/sikanhe/algolia.svg?branch=master)](https://travis-ci.org/sikanhe/algolia)
+  [![Build Status](https://travis-ci.org/sikanhe/algolia-elixir.svg?branch=master)](https://travis-ci.org/sikanhe/algolia-elixir)
   [![Coverage Status](https://coveralls.io/repos/github/sikanhe/algolia-elixir/badge.svg?branch=master)](https://coveralls.io/github/sikanhe/algolia-elixir?branch=master)
 ##
 
