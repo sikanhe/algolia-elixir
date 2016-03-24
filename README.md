@@ -2,7 +2,7 @@
 
 This is the elixir implementation of Algolia search API, it is purely functional
 
-Note, in order to get the multiple indexes working, we have to use the latest branch for Hackney
+Note, in order to get the multi-index queries working, we have to use the latest branch for Hackney
 
 ```elixir
   defp deps do
