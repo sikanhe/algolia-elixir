@@ -7,3 +7,6 @@ sudo: required
 install:
   - mix local.hex --force
   - mix deps.get
+env:
+  - MIX_ENV=test
+script: mix coveralls.travis

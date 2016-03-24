@@ -91,6 +91,7 @@ defmodule Algolia do
       |> Path.join(host(read_or_write, curr_retry))
       |> Path.join("/1/indexes")
       |> Path.join(path)
+      |> IO.inspect
 
     headers = [
       "X-Algolia-API-Key": @api_key,
@@ -357,5 +358,6 @@ defmodule Algolia do
     with :ok <- wait_task(index, task_id, time_before_retry), do: response
   end
   def wait(response = {:ok, _}), do: wait(response, 1000)
+  def wait(response = {:error, _}), do: response
   def wait(response), do: response
 end

@@ -4,10 +4,19 @@ defmodule Algolia.Mixfile do
   def project do
     [app: :algolia,
      version: "0.2.0",
+     description: "Elixir implementation of Algolia Search API",
      elixir: "~> 1.2",
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
+     package: package,
+     test_coverage: [tool: ExCoveralls],
      deps: deps]
+  end
+
+  def package do
+    [
+      maintainers: ["Sikan He"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/sikanhe/algolia-elixir"}
+    ]
   end
 
   # Configuration for the OTP application
@@ -27,7 +36,8 @@ defmodule Algolia.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:hackney, github: "benoitc/hackney"},
-     {:poison, "~> 1.5"}]
+    [{:hackney, github: "benoitc/hackney", override: true},
+     {:poison, "~> 1.5"},
+     {:excoveralls, "~> 0.3.11", only: :test}]
   end
 end
