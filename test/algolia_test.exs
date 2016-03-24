@@ -18,8 +18,7 @@ defmodule AlgoliaTest do
   end
 
   test "list all indexes" do
-    {:ok, %{"items" => items}} = list_indexes
-    assert length(items) === length(@indexes)
+    assert {:ok, %{"items" => items}} = list_indexes
   end
 
   test "wait task" do
@@ -50,12 +49,12 @@ defmodule AlgoliaTest do
     count = :random.uniform 10
     docs = Enum.map(1..count, &(%{id: &1, test: "search single index"}))
 
-    {:ok, _} = save_objects("test_2", docs, id_attribute: :id)
+    {:ok, _} = save_objects("test_3", docs, id_attribute: :id)
     |> wait
 
     :timer.sleep(5_000)
-    
-    {:ok, %{"hits" => hits1}} = search("test_2", "search single index")
+
+    {:ok, %{"hits" => hits1}} = search("test_3", "search single index")
     assert length(hits1) === count
   end
 
@@ -65,7 +64,7 @@ defmodule AlgoliaTest do
     {:ok, _} = save_objects("test_3", docs, id_attribute: :id) |> wait
 
     :timer.sleep(5_000)
-    
+
     {:ok, results = %{"hits" => hits, "page" => page}} =
       search("test_3", "search pages", page: 1)
 
@@ -82,7 +81,7 @@ defmodule AlgoliaTest do
       |> Enum.map(fn(task) -> Task.await(task, :infinity) end)
 
       :timer.sleep(5_000)
-      
+
     queries = format_multi_index_queries("search multiple indexes", @indexes)
     {:ok, body} = search(queries)
 
@@ -124,7 +123,7 @@ defmodule AlgoliaTest do
     assert {:ok, _} = partial_update_object("test_2", %{update: "updated"}, object_id) |> wait
 
     :timer.sleep(5_000)
-    
+
     {:ok, object} = get_object("test_2", object_id)
     assert object["update"] == "updated"
   end
@@ -138,7 +137,7 @@ defmodule AlgoliaTest do
       |> wait
 
       :timer.sleep(5_000)
-      
+
     {:ok, object} = get_object("test_2", id)
     assert object["objectID"] == id
   end
@@ -152,7 +151,7 @@ defmodule AlgoliaTest do
       |> wait
 
       :timer.sleep(5_000)
-      
+
     assert {:error, 404, _} = get_object("test_3", id)
   end
 
@@ -166,7 +165,7 @@ defmodule AlgoliaTest do
       |> wait
 
       :timer.sleep(5_000)
-      
+
     assert {:ok, _} = get_object("test_3", "partial_update_multiple_1")
     assert {:ok, _} = get_object("test_3", "partial_update_multiple_2")
   end
@@ -182,7 +181,7 @@ defmodule AlgoliaTest do
       |> wait
 
       :timer.sleep(5_000)
-      
+
     assert {:error, 404, _} = get_object("test_3", "partial_update_multiple_1_no_upsert")
     assert {:error, 404, _} = get_object("test_3", "partial_update_multiple_2_no_upsert")
   end
