@@ -9,4 +9,4 @@ install:
   - mix deps.get
 env:
   - MIX_ENV=test
-script: mix coveralls.travis
+# script: mix coveralls.travis

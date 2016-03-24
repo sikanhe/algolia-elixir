@@ -38,6 +38,6 @@ defmodule Algolia.Mixfile do
   defp deps do
     [{:hackney, github: "benoitc/hackney", override: true},
      {:poison, "~> 1.5"},
-     {:excoveralls, "~> 0.3.11", only: :test}]
+     {:excoveralls, "~> 0.5.1", only: :test}]
   end
 end

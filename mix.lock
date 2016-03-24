@@ -1,5 +1,5 @@
 %{"certifi": {:hex, :certifi, "0.4.0"},
-  "excoveralls": {:hex, :excoveralls, "0.3.11"},
+  "excoveralls": {:hex, :excoveralls, "0.5.1"},
   "exjsx": {:hex, :exjsx, "3.2.0"},
   "hackney": {:git, "https://github.com/benoitc/hackney.git", "06991f654a83ba1f687d97d10e17efb469f47207", []},
   "idna": {:hex, :idna, "1.2.0"},

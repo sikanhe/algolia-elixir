@@ -1,4 +1,8 @@
-## Algolia [![Build Status](https://travis-ci.org/sikanhe/algolia.svg?branch=master)](https://travis-ci.org/sikanhe/algolia)
+##
+  Algolia
+  [![Build Status](https://travis-ci.org/sikanhe/algolia.svg?branch=master)](https://travis-ci.org/sikanhe/algolia)
+  [![Coverage Status](https://coveralls.io/repos/github/sikanhe/algolia-elixir/badge.svg?branch=master)](https://coveralls.io/github/sikanhe/algolia-elixir?branch=master)
+##
 
 This is the elixir implementation of Algolia search API, it is purely functional
 
