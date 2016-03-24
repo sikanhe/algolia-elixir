@@ -99,7 +99,7 @@ Save multiple objects to an index
 
 ### Updating
 
-Update a single object to index without specifying objectID
+Partially updates a single object
 
 ```elixir
     "my_index" |> partial_update_object(%{title: "hello"}, "12345")
@@ -110,6 +110,14 @@ Update multiple objects, must have objectID in each object, or use the `id_attri
 
 ```elixir
     "my_index" |> partial_update_objects([%{objectID: "1"}, %{objectID: "2"}])
+```
+
+Partial update by default creates a new object if an object does not exist at the
+objectID, you can turn this off by passing `false` to the `:upsert?` option
+
+```elixir
+    "my_index" |> partial_update_object(%{title: "hello"}, "12345", upsert?: false)
+    "my_index" |> partial_update_objects([%{id: "1"}, %{id: "2"}], id_attribute: :id, upsert?: false)
 ```
 
 
