@@ -66,6 +66,7 @@ defmodule Algolia do
       connect_timeout: 10_000 * (curr_retry + 1),
       recv_timeout: 30_000 * (curr_retry + 1),
     ])
+    |> IO.inspect
     |> case do
       {:ok, 200, _headers, body} ->
         {:ok, body |> Poison.decode!}
