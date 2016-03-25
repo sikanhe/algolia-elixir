@@ -3,7 +3,7 @@ defmodule Algolia.Mixfile do
 
   def project do
     [app: :algolia,
-     version: "0.3.0",
+     version: "0.3.1",
      description: "Elixir implementation of Algolia Search API",
      elixir: "~> 1.2",
      package: package,
@@ -27,8 +27,8 @@ defmodule Algolia.Mixfile do
      {:poison, "~> 1.5 or ~> 2.0"},
 
      # Docs
-     {:ex_doc, "~> 0.10", only: :docs},
-     {:earmark, "~> 0.1", only: :docs},
-     {:inch_ex, ">= 0.0.0", only: :docs}]
+     {:ex_doc, "~> 0.10", only: :dev},
+     {:earmark, "~> 0.1", only: :dev},
+     {:inch_ex, ">= 0.0.0", only: :dev}]
   end
 end

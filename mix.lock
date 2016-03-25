@@ -6,6 +6,7 @@
   "hackney": {:hex, :hackney, "1.6.0"},
   "hoedown": {:git, "https://github.com/hoedown/hoedown.git", "980b9c549b4348d50b683ecee6abee470b98acda", []},
   "idna": {:hex, :idna, "1.2.0"},
+  "inch_ex": {:hex, :inch_ex, "0.5.1"},
   "jsx": {:hex, :jsx, "2.6.2"},
   "markdown": {:git, "https://github.com/devinus/markdown.git", "9b3beaf69a9b9c6450526c41d591a94d2eedf1e8", []},
   "metrics": {:hex, :metrics, "1.0.1"},
