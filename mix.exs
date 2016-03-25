@@ -7,7 +7,6 @@ defmodule Algolia.Mixfile do
      description: "Elixir implementation of Algolia Search API",
      elixir: "~> 1.2",
      package: package,
-     test_coverage: [tool: ExCoveralls],
      deps: deps]
   end
 
@@ -26,9 +25,10 @@ defmodule Algolia.Mixfile do
   defp deps do
     [{:hackney, "~> 1.6.0"},
      {:poison, "~> 1.5"},
-     {:excoveralls, "~> 0.5.1", only: :test},
-     {:ex_doc, "~> 0.11", only: :dev},
-     {:markdown, github: "devinus/markdown", only: :dev},
-     {:earmark, "~> 0.2.1", only: :dev}]
+
+     # Docs
+     {:ex_doc, "~> 0.10", only: :docs},
+     {:earmark, "~> 0.1", only: :docs},
+     {:inch_ex, ">= 0.0.0", only: :docs}]
   end
 end
