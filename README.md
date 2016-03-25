@@ -7,7 +7,7 @@ Add to your dependencies
 
 ```elixir
   defp deps do
-    [{:algolia, github: "sikanhe/algolia-elixir"}]
+    [{:algolia, "~> 0.3.0"}]
   end
 ```
 
