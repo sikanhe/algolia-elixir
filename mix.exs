@@ -3,7 +3,7 @@ defmodule Algolia.Mixfile do
 
   def project do
     [app: :algolia,
-     version: "0.2.0",
+     version: "0.3.0",
      description: "Elixir implementation of Algolia Search API",
      elixir: "~> 1.2",
      package: package,
@@ -36,7 +36,7 @@ defmodule Algolia.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:hackney, github: "benoitc/hackney", override: true},
+    [{:hackney, "~> 1.6.0"},
      {:poison, "~> 1.5"},
      {:excoveralls, "~> 0.5.1", only: :test},
      {:ex_doc, "~> 0.11", only: :dev},

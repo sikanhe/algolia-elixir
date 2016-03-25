@@ -65,6 +65,7 @@ defmodule AlgoliaTest do
     assert length(hits) === 20
   end
 
+  @tag only: true
   test "search multiple indexes" do
     :random.seed(:erlang.timestamp)
 
