@@ -13,7 +13,7 @@ defmodule Algolia.Mixfile do
   def package do
     [
       maintainers: ["Sikan He"],
-      licenses: ["MIT"],
+      licenses: ["Apache 2.0"],
       links: %{"GitHub" => "https://github.com/sikanhe/algolia-elixir"}
     ]
   end
