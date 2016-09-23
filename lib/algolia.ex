@@ -131,7 +131,7 @@ defmodule Algolia do
       recv_timeout: 30_000 * (curr_retry + 1),
     ])
     |> case do
-      {:ok, 200, _headers, body} ->
+      {:ok, code, _headers, body} when code in 200..299 ->
         {:ok, body |> Poison.decode!}
       {:ok, code, _, body} ->
         {:error, code, body}
