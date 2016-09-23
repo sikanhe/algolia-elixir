@@ -3,15 +3,42 @@ defmodule Algolia do
   Elixir implementation of Algolia search API, using Hackney for http requests
   """
 
-  @application_id  Application.fetch_env!(:algolia, :application_id)
-  @api_key         Application.fetch_env!(:algolia, :api_key)
+  defmodule MissingApplicationIDError do
+    defexception message: """
+      The `application_id` settings is required to use Algolia. Please include your
+      application_id in your application config file like so:
+        config :algilia, application_id: YOUR_APPLICATION_ID
+      Alternatively, you can also set the secret key as an environment variable:
+        ALGOLIA_APPLICATION_ID=YOUR_APP_ID
+    """
+  end
+
+  defmodule MissingAPIKeyError do
+    defexception message: """
+      The `api_key` settings is required to use Algolia. Please include your
+      api key in your application config file like so:
+        config :algolia, api_key: YOUR_API_KEY
+      Alternatively, you can also set the secret key as an environment variable:
+        ALGOLIA_API_KEY=YOUR_SECRET_API_KEY
+    """
+  end
+
+  def application_id do
+    Application.get_env(:algolia, :application_id, System.get_env("ALGOLIA_APPLICATION_ID"))
+    || raise MissingApplicationIDError
+  end
+
+  def api_key do
+    Application.get_env(:algolia, :api_key, System.get_env("ALGOLIA_API_KEY"))
+    || raise MissingAPIKeyError
+  end
 
   defp host(:read, 0),
-    do: "#{@application_id}-dsn.algolia.net"
+    do: "#{application_id()}-dsn.algolia.net"
   defp host(:write, 0),
-    do: "#{@application_id}.algolia.net"
+    do: "#{application_id()}.algolia.net"
   defp host(_read_or_write, curr_retry) when curr_retry <= 3,
-    do: "#{@application_id}-#{curr_retry}.algolianet.com"
+    do: "#{application_id()}-#{curr_retry}.algolianet.com"
 
   @doc """
   Multiple queries
@@ -93,8 +120,8 @@ defmodule Algolia do
       |> Path.join(path)
 
     headers = [
-      "X-Algolia-API-Key": @api_key,
-      "X-Algolia-Application-Id": @application_id
+      "X-Algolia-API-Key": api_key(),
+      "X-Algolia-Application-Id": application_id()
     ]
 
     :hackney.request(method, url, headers, body, [
@@ -124,14 +151,49 @@ defmodule Algolia do
   end
 
   @doc """
+  Add an Object
+  """
+  def add_object(index, object) do
+    body = object |> Poison.encode!
+    path = "#{index}"
+
+    send_request(:write, :post, path, body)
+    |> inject_index_into_response(index)
+  end
+
+  @doc """
+  Add an object with an attribute as the objectID
+  """
+  def add_object(index, object, [id_attribute: id_attribute]) do
+    save_object(index, object, [id_attribute: id_attribute])
+  end
+
+  @doc """
+  Add multiple objects
+  """
+  def add_objects(index, objects) do
+    objects
+    |> build_batch_request("addObject")
+    |> send_batch_request(index)
+  end
+
+  @doc """
+  Add multiple objects, with an attribute as objectID
+  """
+  def add_objects(index, objects, [id_attribute: id_attribute]) do
+    save_objects(index, objects, [id_attribute: id_attribute])
+  end
+
+  @doc """
   Save a single object, without objectID specified, must have objectID as
   a field
   """
   def save_object(index, object, [id_attribute: id_attribute]) do
-    object_id = object[id_attribute] || object[to_string id_attribute]
+    object_id = object[id_attribute] || object[to_string(id_attribute)]
 
     if !object_id do
-      raise "Object must have an objectID"
+      raise ArgumentError,
+        message: "Your object #{object} does not have a attribute #{id_attribute}"
     end
 
     save_object(index, object, object_id)
@@ -165,13 +227,13 @@ defmodule Algolia do
   def save_objects(index, objects, [id_attribute: id_attribute]) when is_list(objects) do
     objects
     |> add_object_ids(id_attribute: id_attribute)
-    |> build_batch_request("updateObject", with_object_id: true)
+    |> build_batch_request("updateObject")
     |> send_batch_request(index)
   end
 
   def save_objects(index, objects) when is_list(objects) do
     objects
-    |> build_batch_request("updateObject", with_object_id: true)
+    |> build_batch_request("updateObject")
     |> send_batch_request(index)
   end
 
@@ -208,7 +270,7 @@ defmodule Algolia do
 
     objects
     |> add_object_ids(id_attribute: id_attribute)
-    |> build_batch_request(action, with_object_id: true)
+    |> build_batch_request(action)
     |> send_batch_request(index)
   end
 
@@ -254,18 +316,15 @@ defmodule Algolia do
     |> inject_index_into_response(index)
   end
 
-  defp build_batch_request(objects, action, with_object_id: with_object_id) do
-    requests = Enum.map objects, fn(object) ->
-      if with_object_id do
-        object_id = get_object_id!(object)
-
-        %{action: action, body: object, objectID: object_id}
-      else
-        %{action: action, body: object}
+  defp build_batch_request(objects, action) do
+    requests = Enum.map objects, fn (object) ->
+      case get_object_id(object) do
+        {:ok, object_id} -> %{action: action, body: object, objectID: object_id}
+        _ -> %{action: action, body: object}
       end
     end
 
-    %{ requests: requests }
+    %{requests: requests}
   end
 
   @doc """
@@ -285,7 +344,7 @@ defmodule Algolia do
     |> Enum.map(fn (id) ->
       %{objectID: id}
     end)
-    |> build_batch_request("deleteObject", with_object_id: true)
+    |> build_batch_request("deleteObject")
     |> send_batch_request(index)
   end
 

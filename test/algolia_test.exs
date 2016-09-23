@@ -15,6 +15,28 @@ defmodule AlgoliaTest do
     |> Enum.each(&wait/1)
   end
 
+  test "add object" do
+    {:ok, %{"objectID" => object_id}} =
+      "test_1"
+      |> add_object(%{text: "hello"})
+      |> wait
+
+    assert {:ok, %{"text" => "hello"}} =
+      get_object("test_1", object_id)
+  end
+
+  test "add multiple objects" do
+    assert {:ok, %{"objectIDs" => ids}} =
+      "test_1"
+      |> add_objects([%{text: "add multiple test"}, %{text: "add multiple test"}, %{text: "add multiple test"}])
+      |> wait
+
+    for id <- ids do
+      assert {:ok, %{"text" => "add multiple test"}} =
+        get_object("test_1", id)
+    end
+  end
+
   test "list all indexes" do
     assert {:ok, %{"items" => items}} = list_indexes
   end
