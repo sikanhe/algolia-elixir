@@ -1,4 +1,4 @@
-## Algolia [![Build Status](https://travis-ci.org/sikanhe/algolia-elixir.svg?branch=master)](https://travis-ci.org/sikanhe/algolia-elixir) ##
+## Algolia [![Build Status](https://semaphoreci.com/api/v1/sikanhe/algolia-elixir/branches/master/badge.svg)](https://semaphoreci.com/sikanhe/algolia-elixir) ##
 
 This is the elixir implementation of Algolia search API, it is purely functional
 
