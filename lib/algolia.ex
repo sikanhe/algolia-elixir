@@ -91,7 +91,7 @@ defmodule Algolia do
   Search a single index
   """
   def search(index, query, opts) do
-    path = "#{index}?query=#{query}" <> opts_to_query_params(opts)
+    path = "#{index}?query=#{URI.encode query}" <> opts_to_query_params(opts)
     send_request(:read, :get, path)
   end
   def search(index, query), do: search(index, query, [])
