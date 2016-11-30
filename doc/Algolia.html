@@ -5,7 +5,7 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.11.4">
-    <title>Algolia – algolia v0.3.1</title>
+    <title>Algolia – algolia v0.4.1</title>
     <link rel="stylesheet" href="dist/app-1e374caa3d.css" />
     <script src="dist/sidebar_items.js"></script>
   </head>
@@ -27,7 +27,7 @@
         algolia
       </h1>
       <h2 class="sidebar-projectVersion">
-        v0.3.1
+        v0.4.1
       </h2>
     </div>
     
@@ -46,6 +46,8 @@
     
 
     
+      <li><a id="exceptions-list" href="#full-list">Exceptions</a></li>
+    
 
     
   </ul>
@@ -59,7 +61,7 @@
 
 
       <h1>
-        <small class="visible-xs">algolia v0.3.1</small>
+        <small class="visible-xs">algolia v0.4.1</small>
         Algolia
         
         
@@ -88,6 +90,54 @@
       <a href="#functions">Functions</a>
     </h2>
     <div class="summary-row">
+  <div class="summary-signature">
+    <a href="#add_object/2">add_object(index, object)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Add an Object</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#add_object/3">add_object(index, object, list)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Add an object with an attribute as the objectID</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#add_objects/2">add_objects(index, objects)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Add multiple objects</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#add_objects/3">add_objects(index, objects, list)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Add multiple objects, with an attribute as objectID</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#api_key/0">api_key()</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#application_id/0">application_id()</a>
+  </div>
+  
+</div>
+<div class="summary-row">
   <div class="summary-signature">
     <a href="#clear_index/1">clear_index(index)</a>
   </div>
@@ -194,6 +244,12 @@
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="#save_object/2">save_object(index, object)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="#save_object/3">save_object(index, object, object_id)</a>
   </div>
   
@@ -204,7 +260,13 @@ a field</p>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="#save_objects/3">save_objects(index, objects, opts \\ [id_attribute: :objectID])</a>
+    <a href="#save_objects/2">save_objects(index, objects)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#save_objects/3">save_objects(index, objects, list)</a>
   </div>
   
     <div class="summary-synopsis"><p>Save multiple objects</p>
@@ -282,7 +344,89 @@ returns :ok when it’s done</p>
             </a>
             Functions
           </h1>
-          <div class="detail" id="clear_index/1">
+          <div class="detail" id="add_object/2">
+  <div class="detail-header">
+    <a href="#add_object/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">add_object(index, object)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Add an Object</p>
+
+  </section>
+</div>
+<div class="detail" id="add_object/3">
+  <div class="detail-header">
+    <a href="#add_object/3" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">add_object(index, object, list)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Add an object with an attribute as the objectID</p>
+
+  </section>
+</div>
+<div class="detail" id="add_objects/2">
+  <div class="detail-header">
+    <a href="#add_objects/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">add_objects(index, objects)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Add multiple objects</p>
+
+  </section>
+</div>
+<div class="detail" id="add_objects/3">
+  <div class="detail-header">
+    <a href="#add_objects/3" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">add_objects(index, objects, list)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    <p>Add multiple objects, with an attribute as objectID</p>
+
+  </section>
+</div>
+<div class="detail" id="api_key/0">
+  <div class="detail-header">
+    <a href="#api_key/0" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">api_key()</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="application_id/0">
+  <div class="detail-header">
+    <a href="#application_id/0" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">application_id()</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="clear_index/1">
   <div class="detail-header">
     <a href="#clear_index/1" class="detail-link" title="Link to this function">
       <i class="icon-link"></i>
@@ -449,6 +593,19 @@ returns :ok when it’s done</p>
 
   </section>
 </div>
+<div class="detail" id="save_object/2">
+  <div class="detail-header">
+    <a href="#save_object/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">save_object(index, object)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
 <div class="detail" id="save_object/3">
   <div class="detail-header">
     <a href="#save_object/3" class="detail-link" title="Link to this function">
@@ -464,12 +621,25 @@ a field</p>
 
   </section>
 </div>
+<div class="detail" id="save_objects/2">
+  <div class="detail-header">
+    <a href="#save_objects/2" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">save_objects(index, objects)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
 <div class="detail" id="save_objects/3">
   <div class="detail-header">
     <a href="#save_objects/3" class="detail-link" title="Link to this function">
       <i class="icon-link"></i>
     </a>
-    <span class="signature">save_objects(index, objects, opts \\ [id_attribute: :objectID])</span>
+    <span class="signature">save_objects(index, objects, list)</span>
       
   </div>
   
