@@ -103,7 +103,6 @@ defmodule Algolia do
       "&#{key}=#{value}"
     end)
     |> Enum.join
-    |> URI.encode
   end
 
   defp send_request(_, _, _, _, 4),
@@ -126,7 +125,7 @@ defmodule Algolia do
 
     :hackney.request(method, url, headers, body, [
       :with_body,
-      path_encode_fun: &(&1),
+      path_encode_fun: &URI.encode/1,
       connect_timeout: 3_000 * (curr_retry + 1),
       recv_timeout: 30_000 * (curr_retry + 1),
     ])
