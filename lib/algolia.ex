@@ -128,6 +128,7 @@ defmodule Algolia do
       path_encode_fun: &URI.encode/1,
       connect_timeout: 3_000 * (curr_retry + 1),
       recv_timeout: 30_000 * (curr_retry + 1),
+      ssl_options: [{:versions, [:'tlsv1.2']}]
     ])
     |> case do
       {:ok, code, _headers, body} when code in 200..299 ->
