@@ -356,6 +356,15 @@ defmodule Algolia do
   end
 
   @doc """
+  Deletes the index
+  """
+  def delete_index(index) do
+    path = "#{index}"
+    send_request(:write, :delete, path)
+    |> inject_index_into_response(index)
+  end
+
+  @doc """
   Clears all content of an index
   """
   def clear_index(index) do
@@ -363,6 +372,7 @@ defmodule Algolia do
     send_request(:write, :post, path)
     |> inject_index_into_response(index)
   end
+
 
   @doc """
   Set the settings of a index
