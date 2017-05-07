@@ -258,4 +258,13 @@ defmodule AlgoliaTest do
     assert {:ok, %{"objectID" => "copy_1"}} = get_object(dst, "copy_1")
     assert {:ok, %{"objectID" => "copy_2"}} = get_object(dst, "copy_2")
   end
+
+  test "deletes an index" do
+    index = "delete_test_index"
+    add_object(index, %{})|> wait() 
+    assert index in list_indexes() 
+    
+    assert {:ok, _} = delete_index(index) |> wait()
+    refute index in list_indexes
+  end
 end
