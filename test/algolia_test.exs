@@ -261,9 +261,9 @@ defmodule AlgoliaTest do
 
   test "deletes an index" do
     index = "delete_test_index"
-    add_object(index, %{})|> wait() 
+    add_object(index, %{objectID: "delete_test"}) |> wait() 
     assert index in list_indexes() 
-    
+
     assert {:ok, _} = delete_index(index) |> wait()
     refute index in list_indexes
   end
