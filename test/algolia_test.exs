@@ -262,9 +262,12 @@ defmodule AlgoliaTest do
   test "deletes an index" do
     index = "delete_test_index"
     add_object(index, %{objectID: "delete_test"}) |> wait() 
-    assert index in list_indexes() 
 
+    {:ok, %{"items" => items}} = list_indexes()
+    all_indexes = Enum.map(items, & &1["name"])
+    assert index in all_indexes
+    
     assert {:ok, _} = delete_index(index) |> wait()
-    refute index in list_indexes
+    refute index in all_indexes
   end
 end
