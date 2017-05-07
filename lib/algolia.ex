@@ -23,6 +23,10 @@ defmodule Algolia do
     """
   end
 
+  defmodule InvalidObjectIDError do
+    defexception message: "The ObjectID cannot be an empty string"
+  end
+
   def application_id do
     Application.get_env(:algolia, :application_id, System.get_env("ALGOLIA_APPLICATION_ID"))
     || raise MissingApplicationIDError
@@ -105,12 +109,15 @@ defmodule Algolia do
     |> Enum.join
   end
 
-  defp send_request(_, _, _, _, 4),
-    do: {:error, "Unable to connect to Algolia"}
-  defp send_request(read_or_write, method, path),
-    do: send_request(read_or_write, method, path, "", 0)
-  defp send_request(read_or_write, method, path, body),
-    do: send_request(read_or_write, method, path, body, 0)
+  defp send_request(read_or_write, method, path) do
+    send_request(read_or_write, method, path, "", 0)
+  end
+  defp send_request(read_or_write, method, path, body) do
+    send_request(read_or_write, method, path, body, 0)
+  end
+  defp send_request(_, _, _, _, 4) do
+    {:error, "Unable to connect to Algolia"}
+  end
   defp send_request(read_or_write, method, path, body, curr_retry) do
     url =
       "https://"
@@ -300,14 +307,6 @@ defmodule Algolia do
     end
   end
 
-  defp get_object_id!(object) do
-    case get_object_id(object) do
-      {:error, _} ->
-        raise ArgumentError, message: "objectID doesn't exist"
-      {:ok, object_id} -> object_id
-    end
-  end
-
   defp send_batch_request(requests, index) do
     path = "/#{index}/batch"
     body = requests |> Poison.encode!
@@ -330,6 +329,9 @@ defmodule Algolia do
   @doc """
   Delete a object by its objectID
   """
+  def delete_object(_index, "") do
+    {:error, %InvalidObjectIDError{}}
+  end
   def delete_object(index, object_id) do
     path = "#{index}/#{object_id}"
     send_request(:write, :delete, path)
@@ -403,7 +405,7 @@ defmodule Algolia do
   defp inject_index_into_response({:ok, body}, index) do
     {:ok, Map.put(body, "indexName", index)}
   end
-  defp inject_index_into_response(response, index), do: response
+  defp inject_index_into_response(response, _index), do: response
 
   @doc """
   Wait for a task for an index to complete
