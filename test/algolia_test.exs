@@ -266,8 +266,10 @@ defmodule AlgoliaTest do
     {:ok, %{"items" => items}} = list_indexes()
     all_indexes = Enum.map(items, & &1["name"])
     assert index in all_indexes
-    
+
     assert {:ok, _} = delete_index(index) |> wait()
+    {:ok, %{"items" => items}} = list_indexes()
+    all_indexes = Enum.map(items, & &1["name"])
     refute index in all_indexes
   end
 end
