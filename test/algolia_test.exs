@@ -207,6 +207,10 @@ defmodule AlgoliaTest do
     assert {:error, 404, _} = get_object("test_1", object_id)
   end
 
+  test "deleting an object with empty string should return an error" do
+    assert {:error, %Algolia.InvalidObjectIDError{}} = delete_object("test", "")
+  end
+
   test "delete multiple objects" do
     objects = [%{id: "delete_multipel_objects_1"}, %{id: "delete_multipel_objects_2"}]
     {:ok, %{"objectIDs" => object_ids}} =
