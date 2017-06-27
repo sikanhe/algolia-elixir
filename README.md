@@ -7,15 +7,15 @@ Add to your dependencies
 
 ```elixir
   defp deps do
-    [{:algolia, "~> 0.4.1"}]
+    [{:algolia, "~> 0.6.1"}]
   end
 ```
 
-Start the app
+(Pre-Elixir-1.4) Add :algolia to your applications
 
 ```elixir
   def application do
-    [applications: [:logger, :algolia]]
+    [applications: [:algolia]]
   end
 ```
 

@@ -28,13 +28,15 @@ defmodule Algolia do
   end
 
   def application_id do
-    Application.get_env(:algolia, :application_id, System.get_env("ALGOLIA_APPLICATION_ID"))
-    || raise MissingApplicationIDError
+    System.get_env("ALGOLIA_APPLICATION_ID") || 
+    Application.get_env(:algolia, :application_id) ||
+    raise MissingApplicationIDError
   end
 
   def api_key do
-    Application.get_env(:algolia, :api_key, System.get_env("ALGOLIA_API_KEY"))
-    || raise MissingAPIKeyError
+    System.get_env("ALGOLIA_API_KEY") || 
+    Application.get_env(:algolia, :api_key) ||
+    raise MissingAPIKeyError
   end
 
   defp host(:read, 0),
