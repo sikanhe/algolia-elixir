@@ -7,7 +7,7 @@ Add to your dependencies
 
 ```elixir
   defp deps do
-    [{:algolia, "~> 0.6.1"}]
+    [{:algolia, "~> 0.6.2"}]
   end
 ```
 
