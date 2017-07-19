@@ -28,13 +28,13 @@ defmodule Algolia do
   end
 
   def application_id do
-    System.get_env("ALGOLIA_APPLICATION_ID") || 
+    System.get_env("ALGOLIA_APPLICATION_ID") ||
     Application.get_env(:algolia, :application_id) ||
     raise MissingApplicationIDError
   end
 
   def api_key do
-    System.get_env("ALGOLIA_API_KEY") || 
+    System.get_env("ALGOLIA_API_KEY") ||
     Application.get_env(:algolia, :api_key) ||
     raise MissingAPIKeyError
   end
@@ -75,22 +75,12 @@ defmodule Algolia do
         query
         |> Map.delete(:index_name)
         |> Map.delete("index_name")
-        |> format_multi_params
+        |> URI.encode_query
 
       %{indexName: index_name, params: params }
     end
 
     %{ requests: requests }
-  end
-
-
-  def format_multi_params(query) do
-    query
-    |> Stream.map(fn {k, v} ->
-      "#{k}=#{v}"
-    end)
-    |> Enum.join("&")
-    |> URI.encode
   end
 
   @doc """
