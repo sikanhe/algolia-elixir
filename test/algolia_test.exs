@@ -113,6 +113,10 @@ defmodule AlgoliaTest do
     end
   end
 
+  test "search query with special characters" do
+    {:ok, %{"hits" => _}} = search("test_3", "foo & bar")
+  end
+
   defp generate_fixtures_for_index(index) do
     :rand.seed(:exs1024, :erlang.timestamp)
     count = :rand.uniform(3)
