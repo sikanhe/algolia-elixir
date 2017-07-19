@@ -42,8 +42,8 @@ defmodule AlgoliaTest do
   end
 
   test "wait task" do
-    :random.seed(:erlang.timestamp)
-    id = :random.uniform(1000000) |> to_string
+    :rand.seed(:exs1024, :erlang.timestamp)
+    id = :rand.uniform(1000000) |> to_string
     {:ok, %{"objectID" => object_id, "taskID" => task_id}} =
       save_object("test_1", %{}, id)
 
@@ -53,8 +53,8 @@ defmodule AlgoliaTest do
   end
 
   test "save one object, and then read it, using wait_task pipeing" do
-    :random.seed(:erlang.timestamp)
-    id = :random.uniform(1000000) |> to_string
+    :rand.seed(:exs1024, :erlang.timestamp)
+    id = :rand.uniform(1000000) |> to_string
 
     {:ok, %{"objectID" => object_id}} =
       save_object("test_1", %{}, id)
@@ -65,8 +65,8 @@ defmodule AlgoliaTest do
   end
 
   test "search single index" do
-    :random.seed(:erlang.timestamp)
-    count = :random.uniform 10
+    :rand.seed(:exs1024, :erlang.timestamp)
+    count = :rand.uniform 10
     docs = Enum.map(1..count, &(%{id: &1, test: "search_single_index"}))
 
     {:ok, _} =  save_objects("test_3", docs, id_attribute: :id) |> wait
@@ -89,7 +89,7 @@ defmodule AlgoliaTest do
 
   @tag only: true
   test "search multiple indexes" do
-    :random.seed(:erlang.timestamp)
+    :rand.seed(:exs1024, :erlang.timestamp)
 
     fixture_list =
       @indexes
@@ -114,8 +114,8 @@ defmodule AlgoliaTest do
   end
 
   defp generate_fixtures_for_index(index) do
-    :random.seed(:erlang.timestamp)
-    count = :random.uniform(3)
+    :rand.seed(:exs1024, :erlang.timestamp)
+    count = :rand.uniform(3)
 
     objects = Enum.map(1..count, &(%{objectID: &1, test: "search_multiple_indexes"}))
 
@@ -224,8 +224,8 @@ defmodule AlgoliaTest do
   end
 
   test "settings" do
-    :random.seed(:erlang.timestamp)
-    attributesToIndex = :random.uniform(10000000)
+    :rand.seed(:exs1024, :erlang.timestamp)
+    attributesToIndex = :rand.uniform(10000000)
 
     set_settings("test", %{ attributesToIndex: attributesToIndex})
     |> wait
