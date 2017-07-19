@@ -96,19 +96,10 @@ defmodule Algolia do
   @doc """
   Search a single index
   """
-  def search(index, query, opts) do
-    path = "#{index}?query=#{URI.encode query}" <> opts_to_query_params(opts)
+  def search(index, query, opts \\ []) do
+    opts = Keyword.put(opts, :query, query)
+    path = index <> "?" <> URI.encode_query(opts)
     send_request(:read, :get, path)
-  end
-  def search(index, query), do: search(index, query, [])
-
-  defp opts_to_query_params([]), do: ""
-  defp opts_to_query_params(opts) do
-    opts
-    |> Stream.map(fn {key, value} ->
-      "&#{key}=#{value}"
-    end)
-    |> Enum.join
   end
 
   defp send_request(read_or_write, method, path) do
