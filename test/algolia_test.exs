@@ -11,7 +11,7 @@ defmodule AlgoliaTest do
 
   setup_all do
     @indexes
-    |> Enum.map(&clear_index/1)
+    |> Enum.map(&delete_index/1)
     |> Enum.each(&wait/1)
   end
 
@@ -38,12 +38,12 @@ defmodule AlgoliaTest do
   end
 
   test "list all indexes" do
-    assert {:ok, %{"items" => items}} = list_indexes
+    assert {:ok, %{"items" => _items}} = list_indexes()
   end
 
   test "wait task" do
-    :random.seed(:erlang.timestamp)
-    id = :random.uniform(1000000) |> to_string
+    :rand.seed(:exs1024, :erlang.timestamp)
+    id = :rand.uniform(1000000) |> to_string
     {:ok, %{"objectID" => object_id, "taskID" => task_id}} =
       save_object("test_1", %{}, id)
 
@@ -53,8 +53,8 @@ defmodule AlgoliaTest do
   end
 
   test "save one object, and then read it, using wait_task pipeing" do
-    :random.seed(:erlang.timestamp)
-    id = :random.uniform(1000000) |> to_string
+    :rand.seed(:exs1024, :erlang.timestamp)
+    id = :rand.uniform(1000000) |> to_string
 
     {:ok, %{"objectID" => object_id}} =
       save_object("test_1", %{}, id)
@@ -65,8 +65,8 @@ defmodule AlgoliaTest do
   end
 
   test "search single index" do
-    :random.seed(:erlang.timestamp)
-    count = :random.uniform 10
+    :rand.seed(:exs1024, :erlang.timestamp)
+    count = :rand.uniform 10
     docs = Enum.map(1..count, &(%{id: &1, test: "search_single_index"}))
 
     {:ok, _} =  save_objects("test_3", docs, id_attribute: :id) |> wait
@@ -80,7 +80,7 @@ defmodule AlgoliaTest do
 
     {:ok, _} = save_objects("test_3", docs, id_attribute: :id) |> wait
 
-    {:ok, results = %{"hits" => hits, "page" => page}} =
+    {:ok, %{"hits" => hits, "page" => page}} =
       search("test_3", "search_more_than_one_pages", page: 1)
 
     assert page == 1
@@ -89,7 +89,7 @@ defmodule AlgoliaTest do
 
   @tag only: true
   test "search multiple indexes" do
-    :random.seed(:erlang.timestamp)
+    :rand.seed(:exs1024, :erlang.timestamp)
 
     fixture_list =
       @indexes
@@ -113,9 +113,13 @@ defmodule AlgoliaTest do
     end
   end
 
+  test "search query with special characters" do
+    {:ok, %{"hits" => _}} = search("test_3", "foo & bar")
+  end
+
   defp generate_fixtures_for_index(index) do
-    :random.seed(:erlang.timestamp)
-    count = :random.uniform(3)
+    :rand.seed(:exs1024, :erlang.timestamp)
+    count = :rand.uniform(3)
 
     objects = Enum.map(1..count, &(%{objectID: &1, test: "search_multiple_indexes"}))
 
@@ -165,14 +169,10 @@ defmodule AlgoliaTest do
       partial_update_object("test_3", %{update: "updated"}, id, upsert?: false)
       |> wait
 
-
-
     assert {:error, 404, _} = get_object("test_3", id)
   end
 
   test "partially update multiple objects, upsert is default" do
-    id = "partial_update_upsert_false"
-
     objects = [%{id: "partial_update_multiple_1"}, %{id: "partial_update_multiple_2"}]
 
     assert {:ok, _} =
@@ -184,8 +184,6 @@ defmodule AlgoliaTest do
   end
 
   test "partially update multiple objects, upsert is false" do
-    id = "partial_update_upsert_false"
-
     objects = [%{id: "partial_update_multiple_1_no_upsert"},
                %{id: "partial_update_multiple_2_no_upsert"}]
 
@@ -224,13 +222,11 @@ defmodule AlgoliaTest do
   end
 
   test "settings" do
-    :random.seed(:erlang.timestamp)
-    attributesToIndex = :random.uniform(10000000)
+    attributesToIndex = ~w(foo bar baz)
 
-    set_settings("test", %{ attributesToIndex: attributesToIndex})
-    |> wait
+    assert {:ok, _} = set_settings("test", %{attributesToIndex: attributesToIndex}) |> wait
 
-    assert {:ok, %{ "attributesToIndex" => attributesToIndex}} = get_settings("test")
+    assert {:ok, %{"attributesToIndex" => ^attributesToIndex}} = get_settings("test")
   end
 
   test "move index" do
