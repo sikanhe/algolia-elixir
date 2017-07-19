@@ -224,13 +224,11 @@ defmodule AlgoliaTest do
   end
 
   test "settings" do
-    :rand.seed(:exs1024, :erlang.timestamp)
-    attributesToIndex = :rand.uniform(10000000)
+    attributesToIndex = ~w(foo bar baz)
 
-    set_settings("test", %{ attributesToIndex: attributesToIndex})
-    |> wait
+    assert {:ok, _} = set_settings("test", %{attributesToIndex: attributesToIndex}) |> wait
 
-    assert {:ok, %{ "attributesToIndex" => attributesToIndex}} = get_settings("test")
+    assert {:ok, %{"attributesToIndex" => ^attributesToIndex}} = get_settings("test")
   end
 
   test "move index" do
