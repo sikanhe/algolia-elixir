@@ -11,7 +11,7 @@ defmodule AlgoliaTest do
 
   setup_all do
     @indexes
-    |> Enum.map(&clear_index/1)
+    |> Enum.map(&delete_index/1)
     |> Enum.each(&wait/1)
   end
 
