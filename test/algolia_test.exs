@@ -38,7 +38,7 @@ defmodule AlgoliaTest do
   end
 
   test "list all indexes" do
-    assert {:ok, %{"items" => items}} = list_indexes
+    assert {:ok, %{"items" => _items}} = list_indexes()
   end
 
   test "wait task" do
@@ -80,7 +80,7 @@ defmodule AlgoliaTest do
 
     {:ok, _} = save_objects("test_3", docs, id_attribute: :id) |> wait
 
-    {:ok, results = %{"hits" => hits, "page" => page}} =
+    {:ok, %{"hits" => hits, "page" => page}} =
       search("test_3", "search_more_than_one_pages", page: 1)
 
     assert page == 1
@@ -165,14 +165,10 @@ defmodule AlgoliaTest do
       partial_update_object("test_3", %{update: "updated"}, id, upsert?: false)
       |> wait
 
-
-
     assert {:error, 404, _} = get_object("test_3", id)
   end
 
   test "partially update multiple objects, upsert is default" do
-    id = "partial_update_upsert_false"
-
     objects = [%{id: "partial_update_multiple_1"}, %{id: "partial_update_multiple_2"}]
 
     assert {:ok, _} =
@@ -184,8 +180,6 @@ defmodule AlgoliaTest do
   end
 
   test "partially update multiple objects, upsert is false" do
-    id = "partial_update_upsert_false"
-
     objects = [%{id: "partial_update_multiple_1_no_upsert"},
                %{id: "partial_update_multiple_2_no_upsert"}]
 
