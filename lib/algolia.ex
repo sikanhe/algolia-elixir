@@ -87,7 +87,12 @@ defmodule Algolia do
   Search a single index
   """
   def search(index, query, opts \\ []) do
-    opts = Keyword.put(opts, :query, query)
+    opts = opts
+      |> Keyword.put(:query, query)
+      |> Enum.map(fn {k,v} ->
+          v = if is_list(v), do: Enum.join(v, ","), else: v
+          {k, v}
+        end)
     path = index <> "?" <> URI.encode_query(opts)
     send_request(:read, :get, path)
   end

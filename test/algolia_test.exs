@@ -82,6 +82,23 @@ defmodule AlgoliaTest do
     assert length(hits1) === count
   end
 
+  test "search with list opts" do
+    :rand.seed(:exs1024, :erlang.timestamp)
+    count = :rand.uniform 10
+    docs = Enum.map(1..count, &(%{id: &1, test: "search with list opts"}))
+
+    {:ok, _} = save_objects("test_3", docs, id_attribute: :id) |> wait
+
+    opts = [
+      responseFields: ["hits", "nbPages"]
+    ]
+    {:ok, response} = search("test_3", "search_with_list_opts", opts)
+
+    assert response["hits"]
+    assert response["nbPages"]
+    refute response["page"]
+  end
+
   test "search > 1 pages" do
     docs = Enum.map(1..40, &(%{id: &1, test: "search_more_than_one_pages"}))
 
