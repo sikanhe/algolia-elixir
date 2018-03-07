@@ -146,6 +146,18 @@ defmodule Algolia do
   end
 
   @doc """
+  Get multiple objects, potentially from different indices
+
+  Algolia.get_objects([indexName: "…", objectID: "…"])
+  """
+  def get_objects(objects) do
+    body = %{ requests: objects } |> Poison.encode!
+    path = "*/objects"
+
+    send_request(:read, :post, path, body)
+  end
+
+  @doc """
   Add an Object
   """
   def add_object(index, object) do

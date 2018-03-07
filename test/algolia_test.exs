@@ -35,13 +35,15 @@ defmodule AlgoliaTest do
   test "add multiple objects" do
     assert {:ok, %{"objectIDs" => ids}} =
       "test_1"
-      |> add_objects([%{text: "add multiple test"}, %{text: "add multiple test"}, %{text: "add multiple test"}])
+      |> add_objects([%{text: "first"}, %{text: "second"}, %{text: "third"}])
       |> wait
 
-    for id <- ids do
-      assert {:ok, %{"text" => "add multiple test"}} =
-        get_object("test_1", id)
-    end
+    {:ok, %{"results" => objects}} =
+      ids
+      |> Enum.map(fn id -> %{indexName: "test_1", objectID: id} end)
+      |> Algolia.get_objects()
+
+    assert Enum.map(objects, &(&1["text"])) == ~w(first second third)
   end
 
   test "list all indexes" do
