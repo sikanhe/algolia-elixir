@@ -97,6 +97,22 @@ defmodule Algolia do
     send_request(:read, :get, path)
   end
 
+  # Browse all index content
+  # {:ok, %{"hits" => hits, "cursor" => cursor}} =
+  #   Algolia.browse(index_name, query: "search", hitsPerPage: 2)
+  # …
+  # Algolia.browse_from(index_name, cursor)
+  def browse(index, params \\ []) do
+    path = index <> "/browse?" <> URI.encode_query(params)
+    send_request(:read, :get, path)
+  end
+
+  def browse_from(index, cursor) do
+    opts = [cursor: cursor]
+    path = index <> "/browse?" <> URI.encode_query(opts)
+    send_request(:read, :get, path)
+  end
+
   defp send_request(read_or_write, method, path) do
     send_request(read_or_write, method, path, "", 0)
   end
