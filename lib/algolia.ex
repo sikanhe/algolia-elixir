@@ -5,22 +5,22 @@ defmodule Algolia do
 
   defmodule MissingApplicationIDError do
     defexception message: """
-      The `application_id` settings is required to use Algolia. Please include your
-      application_id in your application config file like so:
-        config :algilia, application_id: YOUR_APPLICATION_ID
-      Alternatively, you can also set the secret key as an environment variable:
-        ALGOLIA_APPLICATION_ID=YOUR_APP_ID
-    """
+                   The `application_id` settings is required to use Algolia. Please include your
+                   application_id in your application config file like so:
+                     config :algilia, application_id: YOUR_APPLICATION_ID
+                   Alternatively, you can also set the secret key as an environment variable:
+                     ALGOLIA_APPLICATION_ID=YOUR_APP_ID
+                 """
   end
 
   defmodule MissingAPIKeyError do
     defexception message: """
-      The `api_key` settings is required to use Algolia. Please include your
-      api key in your application config file like so:
-        config :algolia, api_key: YOUR_API_KEY
-      Alternatively, you can also set the secret key as an environment variable:
-        ALGOLIA_API_KEY=YOUR_SECRET_API_KEY
-    """
+                   The `api_key` settings is required to use Algolia. Please include your
+                   api key in your application config file like so:
+                     config :algolia, api_key: YOUR_API_KEY
+                   Alternatively, you can also set the secret key as an environment variable:
+                     ALGOLIA_API_KEY=YOUR_SECRET_API_KEY
+                 """
   end
 
   defmodule InvalidObjectIDError do
@@ -28,21 +28,18 @@ defmodule Algolia do
   end
 
   def application_id do
-    System.get_env("ALGOLIA_APPLICATION_ID") ||
-    Application.get_env(:algolia, :application_id) ||
-    raise MissingApplicationIDError
+    System.get_env("ALGOLIA_APPLICATION_ID") || Application.get_env(:algolia, :application_id) ||
+      raise MissingApplicationIDError
   end
 
   def api_key do
-    System.get_env("ALGOLIA_API_KEY") ||
-    Application.get_env(:algolia, :api_key) ||
-    raise MissingAPIKeyError
+    System.get_env("ALGOLIA_API_KEY") || Application.get_env(:algolia, :api_key) ||
+      raise MissingAPIKeyError
   end
 
-  defp host(:read, 0),
-    do: "#{application_id()}-dsn.algolia.net"
-  defp host(:write, 0),
-    do: "#{application_id()}.algolia.net"
+  defp host(:read, 0), do: "#{application_id()}-dsn.algolia.net"
+  defp host(:write, 0), do: "#{application_id()}.algolia.net"
+
   defp host(_read_or_write, curr_retry) when curr_retry <= 3,
     do: "#{application_id()}-#{curr_retry}.algolianet.com"
 
@@ -52,47 +49,51 @@ defmodule Algolia do
   def multi(queries, opts \\ [strategy: :none]) do
     strategy = opts[:strategy]
 
-    params = case strategy do
-      :none -> "?strategy=none"
-      :stop_if_enough_matches -> "?strategy=stopIfEnoughMatches"
-      _ -> ""
-    end
+    params =
+      case strategy do
+        :none -> "?strategy=none"
+        :stop_if_enough_matches -> "?strategy=stopIfEnoughMatches"
+        _ -> ""
+      end
 
     path = "*/queries" <> params
-    body = Poison.encode! format_multi(queries)
+    body = queries |> format_multi() |> Poison.encode!()
 
     send_request(:read, :post, path, body)
   end
 
   defp format_multi(queries) do
-    requests = Enum.map queries, fn(query) ->
-      index_name = query[:index_name] || query["index_name"]
+    requests =
+      Enum.map(queries, fn query ->
+        index_name = query[:index_name] || query["index_name"]
 
-      if !index_name,
-        do: raise ArgumentError, message: "Missing index_name for one of the multiple queries"
+        if !index_name,
+          do: raise(ArgumentError, message: "Missing index_name for one of the multiple queries")
 
-      params =
-        query
-        |> Map.delete(:index_name)
-        |> Map.delete("index_name")
-        |> URI.encode_query
+        params =
+          query
+          |> Map.delete(:index_name)
+          |> Map.delete("index_name")
+          |> URI.encode_query()
 
-      %{indexName: index_name, params: params }
-    end
+        %{indexName: index_name, params: params}
+      end)
 
-    %{ requests: requests }
+    %{requests: requests}
   end
 
   @doc """
   Search a single index
   """
   def search(index, query, opts \\ []) do
-    opts = opts
+    opts =
+      opts
       |> Keyword.put(:query, query)
-      |> Enum.map(fn {k,v} ->
-          v = if is_list(v), do: Enum.join(v, ","), else: v
-          {k, v}
-        end)
+      |> Enum.map(fn {k, v} ->
+        v = if is_list(v), do: Enum.join(v, ","), else: v
+        {k, v}
+      end)
+
     path = index <> "?" <> URI.encode_query(opts)
     send_request(:read, :get, path)
   end
@@ -100,12 +101,15 @@ defmodule Algolia do
   defp send_request(read_or_write, method, path) do
     send_request(read_or_write, method, path, "", 0)
   end
+
   defp send_request(read_or_write, method, path, body) do
     send_request(read_or_write, method, path, body, 0)
   end
+
   defp send_request(_, _, _, _, 4) do
     {:error, "Unable to connect to Algolia"}
   end
+
   defp send_request(read_or_write, method, path, body, curr_retry) do
     url =
       "https://"
@@ -118,18 +122,21 @@ defmodule Algolia do
       "X-Algolia-Application-Id": application_id()
     ]
 
-    :hackney.request(method, url, headers, body, [
+    method
+    |> :hackney.request(url, headers, body, [
       :with_body,
       path_encode_fun: &URI.encode/1,
       connect_timeout: 3_000 * (curr_retry + 1),
       recv_timeout: 30_000 * (curr_retry + 1),
-      ssl_options: [{:versions, [:'tlsv1.2']}]
+      ssl_options: [{:versions, [:"tlsv1.2"]}]
     ])
     |> case do
       {:ok, code, _headers, body} when code in 200..299 ->
-        {:ok, body |> Poison.decode!}
+        {:ok, Poison.decode!(body)}
+
       {:ok, code, _, body} ->
         {:error, code, body}
+
       _ ->
         send_request(read_or_write, method, path, body, curr_retry + 1)
     end
@@ -141,7 +148,8 @@ defmodule Algolia do
   def get_object(index, object_id) do
     path = "#{index}/#{object_id}"
 
-    send_request(:read, :get, path)
+    :read
+    |> send_request(:get, path)
     |> inject_index_into_response(index)
   end
 
@@ -149,18 +157,19 @@ defmodule Algolia do
   Add an Object
   """
   def add_object(index, object) do
-    body = object |> Poison.encode!
+    body = Poison.encode!(object)
     path = "#{index}"
 
-    send_request(:write, :post, path, body)
+    :write
+    |> send_request(:post, path, body)
     |> inject_index_into_response(index)
   end
 
   @doc """
   Add an object with an attribute as the objectID
   """
-  def add_object(index, object, [id_attribute: id_attribute]) do
-    save_object(index, object, [id_attribute: id_attribute])
+  def add_object(index, object, id_attribute: id_attribute) do
+    save_object(index, object, id_attribute: id_attribute)
   end
 
   @doc """
@@ -175,15 +184,15 @@ defmodule Algolia do
   @doc """
   Add multiple objects, with an attribute as objectID
   """
-  def add_objects(index, objects, [id_attribute: id_attribute]) do
-    save_objects(index, objects, [id_attribute: id_attribute])
+  def add_objects(index, objects, id_attribute: id_attribute) do
+    save_objects(index, objects, id_attribute: id_attribute)
   end
 
   @doc """
   Save a single object, without objectID specified, must have objectID as
   a field
   """
-  def save_object(index, object, [id_attribute: id_attribute]) do
+  def save_object(index, object, id_attribute: id_attribute) do
     object_id = object[id_attribute] || object[to_string(id_attribute)]
 
     if !object_id do
@@ -195,31 +204,34 @@ defmodule Algolia do
   end
 
   def save_object(index, object, object_id) when is_map(object) do
-    body = object |> Poison.encode!
+    body = Poison.encode!(object)
     path = "#{index}/#{object_id}"
 
-    send_request(:write, :put, path, body)
+    :write
+    |> send_request(:put, path, body)
     |> inject_index_into_response(index)
   end
 
   def save_object(index, object) when is_map(object) do
     object_id = object["objectID"] || object[:objectID]
+
     if !object_id do
       raise ArgumentError,
         message: "Your object must have an objectID to be saved using save_object"
     end
 
-    body = object |> Poison.encode!
+    body = Poison.encode!(object)
     path = "#{index}/#{object_id}"
 
-    send_request(:write, :put, path, body)
+    :write
+    |> send_request(:put, path, body)
     |> inject_index_into_response(index)
   end
 
   @doc """
   Save multiple objects
   """
-  def save_objects(index, objects, [id_attribute: id_attribute]) when is_list(objects) do
+  def save_objects(index, objects, id_attribute: id_attribute) when is_list(objects) do
     objects
     |> add_object_ids(id_attribute: id_attribute)
     |> build_batch_request("updateObject")
@@ -236,17 +248,19 @@ defmodule Algolia do
   Partially updates an object, takes option upsert: true or false
   """
   def partial_update_object(index, object, object_id, opts \\ [upsert?: true]) do
-    body = object |> Poison.encode!
+    body = Poison.encode!(object)
 
-    params = if opts[:upsert?] do
-      ""
-    else
-      "?createIfNotExists=false"
-    end
+    params =
+      if opts[:upsert?] do
+        ""
+      else
+        "?createIfNotExists=false"
+      end
 
     path = "#{index}/#{object_id}/partial" <> URI.encode(params)
 
-    send_request(:write, :post, path, body)
+    :write
+    |> send_request(:post, path, body)
     |> inject_index_into_response(index)
   end
 
@@ -256,10 +270,11 @@ defmodule Algolia do
   def partial_update_objects(index, objects, opts \\ [upsert?: true, id_attribute: :objectID]) do
     id_attribute = opts[:id_attribute] || :objectID
 
-    upsert = case opts[:upsert?] do
-      false -> false
-      _ -> true
-    end
+    upsert =
+      case opts[:upsert?] do
+        false -> false
+        _ -> true
+      end
 
     action = if upsert, do: "partialUpdateObject", else: "partialUpdateObjectNoCreate"
 
@@ -272,9 +287,10 @@ defmodule Algolia do
   # No need to add any objectID by default
   defp add_object_ids(objects, id_attribute: :objectID), do: objects
   defp add_object_ids(objects, id_attribute: "objectID"), do: objects
+
   defp add_object_ids(objects, id_attribute: attribute) do
-    Enum.map(objects, fn(object) ->
-      object_id = object[attribute] || object[to_string attribute]
+    Enum.map(objects, fn object ->
+      object_id = object[attribute] || object[to_string(attribute)]
 
       if !object_id do
         raise ArgumentError, message: "id attribute `#{attribute}` doesn't exist"
@@ -297,19 +313,21 @@ defmodule Algolia do
 
   defp send_batch_request(requests, index) do
     path = "/#{index}/batch"
-    body = requests |> Poison.encode!
+    body = Poison.encode!(requests)
 
-    send_request(:write, :post, path, body)
+    :write
+    |> send_request(:post, path, body)
     |> inject_index_into_response(index)
   end
 
   defp build_batch_request(objects, action) do
-    requests = Enum.map objects, fn (object) ->
-      case get_object_id(object) do
-        {:ok, object_id} -> %{action: action, body: object, objectID: object_id}
-        _ -> %{action: action, body: object}
-      end
-    end
+    requests =
+      Enum.map(objects, fn object ->
+        case get_object_id(object) do
+          {:ok, object_id} -> %{action: action, body: object, objectID: object_id}
+          _ -> %{action: action, body: object}
+        end
+      end)
 
     %{requests: requests}
   end
@@ -320,9 +338,12 @@ defmodule Algolia do
   def delete_object(_index, "") do
     {:error, %InvalidObjectIDError{}}
   end
+
   def delete_object(index, object_id) do
     path = "#{index}/#{object_id}"
-    send_request(:write, :delete, path)
+
+    :write
+    |> send_request(:delete, path)
     |> inject_index_into_response(index)
   end
 
@@ -331,7 +352,7 @@ defmodule Algolia do
   """
   def delete_objects(index, object_ids) do
     object_ids
-    |> Enum.map(fn (id) ->
+    |> Enum.map(fn id ->
       %{objectID: id}
     end)
     |> build_batch_request("deleteObject")
@@ -350,7 +371,9 @@ defmodule Algolia do
   """
   def delete_index(index) do
     path = "#{index}"
-    send_request(:write, :delete, path)
+
+    :write
+    |> send_request(:delete, path)
     |> inject_index_into_response(index)
   end
 
@@ -359,17 +382,20 @@ defmodule Algolia do
   """
   def clear_index(index) do
     path = "#{index}/clear"
-    send_request(:write, :post, path)
+
+    :write
+    |> send_request(:post, path)
     |> inject_index_into_response(index)
   end
-
 
   @doc """
   Set the settings of a index
   """
   def set_settings(index, settings) do
-    body = settings |> Poison.encode!
-    send_request(:write, :put, "/#{index}/settings", body)
+    body = Poison.encode!(settings)
+
+    :write
+    |> send_request(:put, "/#{index}/settings", body)
     |> inject_index_into_response(index)
   end
 
@@ -377,7 +403,8 @@ defmodule Algolia do
   Get the settings of a index
   """
   def get_settings(index) do
-    send_request(:read, :get, "/#{index}/settings")
+    :read
+    |> send_request(:get, "/#{index}/settings")
     |> inject_index_into_response(index)
   end
 
@@ -385,8 +412,10 @@ defmodule Algolia do
   Moves an index to new one
   """
   def move_index(src_index, dst_index) do
-    body = %{ operation: "move", destination: dst_index } |> Poison.encode!
-    send_request(:write, :post, "/#{src_index}/operation", body)
+    body = Poison.encode!(%{operation: "move", destination: dst_index})
+
+    :write
+    |> send_request(:post, "/#{src_index}/operation", body)
     |> inject_index_into_response(src_index)
   end
 
@@ -394,8 +423,10 @@ defmodule Algolia do
   Copies an index to a new one
   """
   def copy_index(src_index, dst_index) do
-    body = %{ operation: "copy", destination: dst_index } |> Poison.encode!
-    send_request(:write, :post, "/#{src_index}/operation", body)
+    body = Poison.encode!(%{operation: "copy", destination: dst_index})
+
+    :write
+    |> send_request(:post, "/#{src_index}/operation", body)
     |> inject_index_into_response(src_index)
   end
 
@@ -403,6 +434,7 @@ defmodule Algolia do
   defp inject_index_into_response({:ok, body}, index) do
     {:ok, Map.put(body, "indexName", index)}
   end
+
   defp inject_index_into_response(response, _index), do: response
 
   @doc """
@@ -411,11 +443,15 @@ defmodule Algolia do
   """
   def wait_task(index, task_id, time_before_retry \\ 1000) do
     case send_request(:write, :get, "#{index}/task/#{task_id}") do
-      {:ok, %{"status" => "published"}} -> :ok
+      {:ok, %{"status" => "published"}} ->
+        :ok
+
       {:ok, %{"status" => "notPublished"}} ->
         :timer.sleep(time_before_retry)
         wait_task(index, task_id, time_before_retry)
-      other -> other
+
+      other ->
+        other
     end
   end
 
@@ -426,6 +462,7 @@ defmodule Algolia do
   def wait(response = {:ok, %{"indexName" => index, "taskID" => task_id}}, time_before_retry) do
     with :ok <- wait_task(index, task_id, time_before_retry), do: response
   end
+
   def wait(response = {:ok, _}), do: wait(response, 1000)
   def wait(response = {:error, _}), do: response
   def wait(response), do: response
