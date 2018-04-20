@@ -123,9 +123,17 @@ defmodule Algolia do
     {:error, "Unable to connect to Algolia"}
   end
   defp send_request(read_or_write, method, path, body, curr_retry) do
+    proto_host =
+      case Application.get_env(:algolia, :api_endpoint) do
+        nil ->
+          "https://"
+          |> Path.join(host(read_or_write, curr_retry))
+        endpoint ->
+          endpoint
+      end
+
     url =
-      "https://"
-      |> Path.join(host(read_or_write, curr_retry))
+      proto_host
       |> Path.join("/1/indexes")
       |> Path.join(path)
 
