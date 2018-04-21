@@ -139,7 +139,8 @@ defmodule Algolia do
 
     headers = [
       "X-Algolia-API-Key": api_key(),
-      "X-Algolia-Application-Id": application_id()
+      "X-Algolia-Application-Id": application_id(),
+      "Content-Type": "application/json; charset=UTF-8"
     ]
 
     :hackney.request(method, url, headers, body, [
