@@ -7,7 +7,8 @@ defmodule AlgoliaTest do
     "test", "test_1", "test_2", "test_3",
     "multi_test_1", "multi_test_2",
     "move_index_test_src", "move_index_test_dst",
-    "copy_index_src", "copy_index_dst"
+    "copy_index_src", "copy_index_dst",
+    "browse_test_index"
   ]
 
   @settings_test_index "settings_test"
@@ -35,13 +36,15 @@ defmodule AlgoliaTest do
   test "add multiple objects" do
     assert {:ok, %{"objectIDs" => ids}} =
       "test_1"
-      |> add_objects([%{text: "add multiple test"}, %{text: "add multiple test"}, %{text: "add multiple test"}])
+      |> add_objects([%{text: "first"}, %{text: "second"}, %{text: "third"}])
       |> wait
 
-    for id <- ids do
-      assert {:ok, %{"text" => "add multiple test"}} =
-        get_object("test_1", id)
-    end
+    {:ok, %{"results" => objects}} =
+      ids
+      |> Enum.map(fn id -> %{indexName: "test_1", objectID: id} end)
+      |> Algolia.get_objects()
+
+    assert Enum.map(objects, &(&1["text"])) == ~w(first second third)
   end
 
   test "list all indexes" do
@@ -280,5 +283,26 @@ defmodule AlgoliaTest do
     {:ok, %{"items" => items}} = list_indexes()
     all_indexes = Enum.map(items, & &1["name"])
     refute index in all_indexes
+  end
+
+  test "browsing an index" do
+    index = "browse_test_index"
+
+    assert {:ok, _} =
+      index
+      |> set_settings(%{customRanking: ["asc(order)"]})
+      |> wait()
+
+    assert {:ok, _} =
+      index
+      |> add_objects([%{order: 0, text: "first"}, %{order: 1, text: "second"}, %{order: 2, text: "third"}])
+      |> wait()
+
+    assert {:ok, %{"hits" => [%{"text" => "first"}], "cursor" => cursor}}
+      = browse(index, hitsPerPage: 1, attributesToRetrieve: "text")
+    assert {:ok, %{"hits" => [%{"text" => "second"}], "cursor" => cursor}}
+      = browse_from(index, cursor)
+    assert {:ok, %{"hits" => [%{"text" => "third"}]}}
+      = browse_from(index, cursor)
   end
 end

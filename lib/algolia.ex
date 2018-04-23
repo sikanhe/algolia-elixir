@@ -98,6 +98,22 @@ defmodule Algolia do
     send_request(:read, :get, path)
   end
 
+  # Browse all index content
+  # {:ok, %{"hits" => hits, "cursor" => cursor}} =
+  #   Algolia.browse(index_name, query: "search", hitsPerPage: 2)
+  # …
+  # Algolia.browse_from(index_name, cursor)
+  def browse(index, params \\ []) do
+    path = index <> "/browse?" <> URI.encode_query(params)
+    send_request(:read, :get, path)
+  end
+
+  def browse_from(index, cursor) do
+    opts = [cursor: cursor]
+    path = index <> "/browse?" <> URI.encode_query(opts)
+    send_request(:read, :get, path)
+  end
+
   defp send_request(read_or_write, method, path) do
     send_request(read_or_write, method, path, "", 0)
   end
@@ -111,15 +127,24 @@ defmodule Algolia do
   end
 
   defp send_request(read_or_write, method, path, body, curr_retry) do
+    proto_host =
+      case Application.get_env(:algolia, :api_endpoint) do
+        nil ->
+          "https://"
+          |> Path.join(host(read_or_write, curr_retry))
+        endpoint ->
+          endpoint
+      end
+
     url =
-      "https://"
-      |> Path.join(host(read_or_write, curr_retry))
+      proto_host
       |> Path.join("/1/indexes")
       |> Path.join(path)
 
     headers = [
       "X-Algolia-API-Key": api_key(),
-      "X-Algolia-Application-Id": application_id()
+      "X-Algolia-Application-Id": application_id(),
+      "Content-Type": "application/json; charset=UTF-8"
     ]
 
     method
@@ -151,6 +176,18 @@ defmodule Algolia do
     :read
     |> send_request(:get, path)
     |> inject_index_into_response(index)
+  end
+
+  @doc """
+  Get multiple objects, potentially from different indices
+
+  Algolia.get_objects([indexName: "…", objectID: "…"])
+  """
+  def get_objects(objects) do
+    body = %{ requests: objects } |> Poison.encode!
+    path = "*/objects"
+
+    send_request(:read, :post, path, body)
   end
 
   @doc """
