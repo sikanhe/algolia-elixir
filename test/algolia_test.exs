@@ -4,7 +4,7 @@ defmodule AlgoliaTest do
   import Algolia
 
   @indexes [
-    "test", "test_1", "test_2", "test_3",
+    "test", "test_1", "test_2", "test_3", "test_4",
     "multi_test_1", "multi_test_2",
     "move_index_test_src", "move_index_test_dst",
     "copy_index_src", "copy_index_dst"
@@ -133,6 +133,28 @@ defmodule AlgoliaTest do
     end
   end
 
+  test "search for facet values" do
+    {:ok, _} =
+      "test_4"
+      |> set_settings(%{attributesForFaceting: ["searchable(family)"]})
+      |> wait
+
+    docs = [
+      %{family: "Diplaziopsidaceae", name: "D. cavaleriana"},
+      %{family: "Diplaziopsidaceae", name: "H. marginatum"},
+      %{family: "Dipteridaceae", name: "D. nieuwenhuisii"},
+    ]
+
+    {:ok, _} = "test_4" |> add_objects(docs) |> wait
+
+    {:ok, %{"facetHits" => hits}} = search_for_facet_values("test_4", "family", "Dip")
+
+    assert [
+      %{"count" => 2, "highlighted" => "<em>Dip</em>laziopsidaceae", "value" => "Diplaziopsidaceae"},
+      %{"count" => 1, "highlighted" => "<em>Dip</em>teridaceae", "value" => "Dipteridaceae"}
+    ] == hits
+  end
+
   defp generate_fixtures_for_index(index) do
     :rand.seed(:exs1024, :erlang.timestamp)
     count = :rand.uniform(3)
@@ -158,7 +180,6 @@ defmodule AlgoliaTest do
     assert object["update"] == "updated"
   end
 
-
   test "partially update object, upsert true" do
     id = "partially_update_object_upsert_true"
 
@@ -171,7 +192,6 @@ defmodule AlgoliaTest do
     {:ok, object} = get_object("test_2", id)
     assert object["objectID"] == id
   end
-
 
   test "partial update object, upsert is false" do
     id = "partial_update_upsert_false"
