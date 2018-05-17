@@ -7,7 +7,7 @@ defmodule Algolia do
     defexception message: """
                    The `application_id` settings is required to use Algolia. Please include your
                    application_id in your application config file like so:
-                     config :algilia, application_id: YOUR_APPLICATION_ID
+                     config :algolia, application_id: YOUR_APPLICATION_ID
                    Alternatively, you can also set the secret key as an environment variable:
                      ALGOLIA_APPLICATION_ID=YOUR_APP_ID
                  """
@@ -57,7 +57,7 @@ defmodule Algolia do
       end
 
     path = "*/queries" <> params
-    body = queries |> format_multi() |> Poison.encode!()
+    body = queries |> format_multi() |> Jason.encode!()
 
     send_request(:read, :post, path, body)
   end
@@ -153,7 +153,7 @@ defmodule Algolia do
     body =
       query
       |> Map.put("facetQuery", text)
-      |> Poison.encode!()
+      |> Jason.encode!()
 
     send_request(:read, :post, path, body)
   end
@@ -192,7 +192,7 @@ defmodule Algolia do
     ])
     |> case do
       {:ok, code, _headers, body} when code in 200..299 ->
-        {:ok, Poison.decode!(body)}
+        {:ok, Jason.decode!(body)}
 
       {:ok, code, _, body} ->
         {:error, code, body}
@@ -217,7 +217,7 @@ defmodule Algolia do
   Add an Object
   """
   def add_object(index, object) do
-    body = Poison.encode!(object)
+    body = Jason.encode!(object)
     path = "#{index}"
 
     :write
@@ -264,7 +264,7 @@ defmodule Algolia do
   end
 
   def save_object(index, object, object_id) when is_map(object) do
-    body = Poison.encode!(object)
+    body = Jason.encode!(object)
     path = "#{index}/#{object_id}"
 
     :write
@@ -280,7 +280,7 @@ defmodule Algolia do
         message: "Your object must have an objectID to be saved using save_object"
     end
 
-    body = Poison.encode!(object)
+    body = Jason.encode!(object)
     path = "#{index}/#{object_id}"
 
     :write
@@ -308,7 +308,7 @@ defmodule Algolia do
   Partially updates an object, takes option upsert: true or false
   """
   def partial_update_object(index, object, object_id, opts \\ [upsert?: true]) do
-    body = Poison.encode!(object)
+    body = Jason.encode!(object)
 
     params =
       if opts[:upsert?] do
@@ -373,7 +373,7 @@ defmodule Algolia do
 
   defp send_batch_request(requests, index) do
     path = "/#{index}/batch"
-    body = Poison.encode!(requests)
+    body = Jason.encode!(requests)
 
     :write
     |> send_request(:post, path, body)
@@ -452,7 +452,7 @@ defmodule Algolia do
   Set the settings of a index
   """
   def set_settings(index, settings) do
-    body = Poison.encode!(settings)
+    body = Jason.encode!(settings)
 
     :write
     |> send_request(:put, "/#{index}/settings", body)
@@ -472,7 +472,7 @@ defmodule Algolia do
   Moves an index to new one
   """
   def move_index(src_index, dst_index) do
-    body = Poison.encode!(%{operation: "move", destination: dst_index})
+    body = Jason.encode!(%{operation: "move", destination: dst_index})
 
     :write
     |> send_request(:post, "/#{src_index}/operation", body)
@@ -483,7 +483,7 @@ defmodule Algolia do
   Copies an index to a new one
   """
   def copy_index(src_index, dst_index) do
-    body = Poison.encode!(%{operation: "copy", destination: dst_index})
+    body = Jason.encode!(%{operation: "copy", destination: dst_index})
 
     :write
     |> send_request(:post, "/#{src_index}/operation", body)
