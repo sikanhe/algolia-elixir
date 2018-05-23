@@ -98,6 +98,66 @@ defmodule Algolia do
     send_request(:read, :get, path)
   end
 
+  @doc """
+  Search for facet values
+
+  Enables you to search through the values of a facet attribute, selecting
+  only a **subset of those values that meet a given criteria**.
+
+  For a facet attribute to be searchable, it must have been declared in the
+  `attributesForFaceting` index setting with the `searchable` modifier.
+
+  Facet-searching only affects facet values. It does not impact the underlying
+  index search.
+
+  The results are **sorted by decreasing count**. This can be adjusted via
+  `sortFacetValuesBy`.
+
+  By default, maximum **10 results are returned**. This can be adjusted via
+  `maxFacetHits`.
+
+  ## Examples
+
+      iex> Algolia.search_for_facet_values("species", "phylum", "dophyta")
+      {
+        :ok,
+        %{
+          "exhaustiveFacetsCount" => false,
+          "faceHits" => [
+            %{
+              "count" => 9000,
+              "highlighted" => "Pteri<em>dophyta</em>",
+              "value" => "Pteridophyta"
+            },
+            %{
+              "count" => 7000,
+              "highlighted" => "Rho<em>dophyta</em>",
+              "value" => "Rhodophyta"
+            },
+            %{
+              "count" => 150,
+              "highlighted" => "Cyca<em>dophyta</em>",
+              "value" => "Cycadophyta"
+            }
+          ],
+          "processingTimeMS" => 42
+        }
+      }
+  """
+  @spec search_for_facet_values(binary, binary, binary, map) ::
+          {:ok, map} | {:error, code :: integer, message :: binary}
+  def search_for_facet_values(index, facet, text, query \\ %{})
+      when is_binary(index) and is_binary(facet) and is_binary(text) do
+    path = index <> "/facets/" <> URI.encode(facet) <> "/query"
+
+    body =
+      query
+      |> Map.put("facetQuery", text)
+      |> Poison.encode!()
+
+    send_request(:read, :post, path, body)
+  end
+
   defp send_request(read_or_write, method, path) do
     send_request(read_or_write, method, path, "", 0)
   end
