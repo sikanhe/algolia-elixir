@@ -73,7 +73,7 @@ All functions are serialized into maps before returning these responses
 With Options
 
 ```elixir
-    "my_index" |> search("some query", %{attributesToRetrieve: "firstname", hitsPerPage: 20})
+    "my_index" |> search("some query", [attributesToRetrieve: "firstname", hitsPerPage: 20])
 ```
 
 See all available search options [**here**](https://www.algolia.com/doc/rest#full-text-search-parameters)
