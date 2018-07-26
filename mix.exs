@@ -4,7 +4,7 @@ defmodule Algolia.Mixfile do
   def project do
     [
       app: :algolia,
-      version: "0.6.5",
+      version: "0.7.0",
       description: "Elixir implementation of Algolia Search API",
       elixir: "~> 1.5",
       package: package(),
