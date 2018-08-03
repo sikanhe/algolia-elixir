@@ -85,7 +85,7 @@ defmodule Algolia do
   @doc """
   Search a single index
   """
-  def search(index, query, opts \\ []) do
+  def search(index, query, opts \\ [], request_options \\ []) do
     opts =
       opts
       |> Keyword.put(:query, query)
@@ -95,7 +95,7 @@ defmodule Algolia do
       end)
 
     path = index <> "?" <> URI.encode_query(opts)
-    send_request(:read, %{method: :get, path: path})
+    send_request(:read, %{method: :get, path: path, options: request_options})
   end
 
   @doc """
@@ -171,9 +171,11 @@ defmodule Algolia do
       |> Path.join("/1/indexes")
       |> Path.join(request[:path])
 
-    headers = [
-      "X-Algolia-API-Key": api_key(),
-      "X-Algolia-Application-Id": application_id()
+    extra_headers = get_in(request, [:options, :headers]) || []
+
+    headers = extra_headers ++ [
+      {"X-Algolia-API-Key", api_key()},
+      {"X-Algolia-Application-Id", application_id()}
     ]
 
     body = request[:body] || ""
