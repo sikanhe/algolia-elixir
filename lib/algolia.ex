@@ -46,7 +46,7 @@ defmodule Algolia do
   @doc """
   Multiple queries
   """
-  def multi(queries, opts \\ [strategy: :none]) do
+  def multi(queries, opts \\ [strategy: :none], request_options \\ []) do
     strategy = opts[:strategy]
 
     params =
@@ -59,7 +59,7 @@ defmodule Algolia do
     path = "*/queries" <> params
     body = queries |> format_multi() |> Jason.encode!()
 
-    send_request(:read, %{method: :post, path: path, body: body})
+    send_request(:read, %{method: :post, path: path, body: body, options: request_options})
   end
 
   defp format_multi(queries) do
@@ -85,7 +85,7 @@ defmodule Algolia do
   @doc """
   Search a single index
   """
-  def search(index, query, opts \\ []) do
+  def search(index, query, opts \\ [], request_options \\ []) do
     opts =
       opts
       |> Keyword.put(:query, query)
@@ -95,7 +95,7 @@ defmodule Algolia do
       end)
 
     path = index <> "?" <> URI.encode_query(opts)
-    send_request(:read, %{method: :get, path: path})
+    send_request(:read, %{method: :get, path: path, options: request_options})
   end
 
   @doc """
@@ -166,7 +166,7 @@ defmodule Algolia do
 
   defp send_request(read_or_write, request, curr_retry) do
     url = request_url(read_or_write, curr_retry, request[:path])
-    headers = request_headers()
+    headers = request_headers(request[:options] || [])
     body = request[:body] || ""
 
     request[:method]
@@ -196,119 +196,129 @@ defmodule Algolia do
     |> Path.join(path)
   end
 
-  defp request_headers() do
-    [
-      "X-Algolia-API-Key": api_key(),
-      "X-Algolia-Application-Id": application_id()
+  defp request_headers(request_options) do
+    custom = request_options[:headers] || []
+
+    default = [
+      {"X-Algolia-API-Key", api_key()},
+      {"X-Algolia-Application-Id", application_id()}
     ]
+
+    custom ++ default
   end
 
   @doc """
   Get an object in an index by objectID
   """
-  def get_object(index, object_id) do
+  def get_object(index, object_id, request_options \\ []) do
     path = "#{index}/#{object_id}"
 
     :read
-    |> send_request(%{method: :get, path: path})
+    |> send_request(%{method: :get, path: path, options: request_options})
     |> inject_index_into_response(index)
   end
 
   @doc """
   Add an Object
+
+  An attribute can be chosen as the objectID.
   """
-  def add_object(index, object) do
+  def add_object(index, object, id_attribute_opts \\ [], request_options \\ [])
+
+  def add_object(index, object, [id_attribute: id_attribute], request_options) do
+    save_object(index, object, [id_attribute: id_attribute], request_options)
+  end
+
+  def add_object(index, object, request_options, []) do
     body = Jason.encode!(object)
     path = "#{index}"
 
     :write
-    |> send_request(%{method: :post, path: path, body: body})
+    |> send_request(%{method: :post, path: path, body: body, options: request_options})
     |> inject_index_into_response(index)
   end
 
   @doc """
-  Add an object with an attribute as the objectID
+  Add multiple objects
+
+  An attribute can be chosen as the objectID.
   """
-  def add_object(index, object, id_attribute: id_attribute) do
-    save_object(index, object, id_attribute: id_attribute)
+  def add_objects(index, objects, id_attribute_opts \\ [], request_options \\ [])
+
+  def add_objects(index, objects, [id_attribute: id_attribute], request_options) do
+    save_objects(index, objects, [id_attribute: id_attribute], request_options)
   end
 
-  @doc """
-  Add multiple objects
-  """
-  def add_objects(index, objects) do
+  def add_objects(index, objects, request_options, []) do
     objects
     |> build_batch_request("addObject")
-    |> send_batch_request(index)
-  end
-
-  @doc """
-  Add multiple objects, with an attribute as objectID
-  """
-  def add_objects(index, objects, id_attribute: id_attribute) do
-    save_objects(index, objects, id_attribute: id_attribute)
+    |> send_batch_request(index, request_options)
   end
 
   @doc """
   Save a single object, without objectID specified, must have objectID as
   a field
   """
-  def save_object(index, object, id_attribute: id_attribute) do
-    object_id = object[id_attribute] || object[to_string(id_attribute)]
+  def save_object(index, object, opts \\ [id_attribute: :objectID], request_options \\ [])
 
-    if !object_id do
-      raise ArgumentError,
-        message: "Your object #{object} does not have a attribute #{id_attribute}"
-    end
+  def save_object(index, object, opts_or_id, request_options) when is_map(object) do
+    object_id = object_id_for_save!(object, opts_or_id)
 
-    save_object(index, object, object_id)
-  end
-
-  def save_object(index, object, object_id) when is_map(object) do
     body = Jason.encode!(object)
     path = "#{index}/#{object_id}"
 
     :write
-    |> send_request(%{method: :put, path: path, body: body})
+    |> send_request(%{method: :put, path: path, body: body, options: request_options})
     |> inject_index_into_response(index)
   end
 
-  def save_object(index, object) when is_map(object) do
-    object_id = object["objectID"] || object[:objectID]
-
-    if !object_id do
+  defp object_id_for_save!(object, id_attribute: :objectID) do
+    type_insensitive_id(object, :objectID) ||
       raise ArgumentError,
         message: "Your object must have an objectID to be saved using save_object"
-    end
+  end
 
-    body = Jason.encode!(object)
-    path = "#{index}/#{object_id}"
+  defp object_id_for_save!(object, id_attribute: id_attribute) do
+    type_insensitive_id(object, id_attribute) ||
+      raise ArgumentError,
+        message: "Your object #{object} does not have a '#{id_attribute}' attribute"
+  end
 
-    :write
-    |> send_request(%{method: :put, path: path, body: body})
-    |> inject_index_into_response(index)
+  defp object_id_for_save!(_object, id), do: id
+
+  defp type_insensitive_id(object, id_attribute) do
+    object[id_attribute] || object[to_string(id_attribute)]
   end
 
   @doc """
   Save multiple objects
   """
-  def save_objects(index, objects, id_attribute: id_attribute) when is_list(objects) do
+  def save_objects(index, objects, id_attribute_opts \\ [], request_options \\ [])
+
+  def save_objects(index, objects, [id_attribute: id_attribute], request_options)
+      when is_list(objects) do
     objects
     |> add_object_ids(id_attribute: id_attribute)
     |> build_batch_request("updateObject")
-    |> send_batch_request(index)
+    |> send_batch_request(index, request_options)
   end
 
-  def save_objects(index, objects) when is_list(objects) do
+  def save_objects(index, objects, request_options, []) when is_list(objects) do
     objects
     |> build_batch_request("updateObject")
-    |> send_batch_request(index)
+    |> send_batch_request(index, request_options)
   end
 
   @doc """
   Partially updates an object, takes option upsert: true or false
   """
-  def partial_update_object(index, object, object_id, opts \\ [upsert?: true]) do
+  def partial_update_object(
+        index,
+        object,
+        object_id,
+        opts \\ [upsert?: true],
+        request_options \\ []
+      ) do
     body = Jason.encode!(object)
 
     params =
@@ -321,14 +331,19 @@ defmodule Algolia do
     path = "#{index}/#{object_id}/partial" <> URI.encode(params)
 
     :write
-    |> send_request(%{method: :post, path: path, body: body})
+    |> send_request(%{method: :post, path: path, body: body, options: request_options})
     |> inject_index_into_response(index)
   end
 
   @doc """
   Partially updates multiple objects
   """
-  def partial_update_objects(index, objects, opts \\ [upsert?: true, id_attribute: :objectID]) do
+  def partial_update_objects(
+        index,
+        objects,
+        opts \\ [upsert?: true, id_attribute: :objectID],
+        request_options \\ []
+      ) do
     id_attribute = opts[:id_attribute] || :objectID
 
     upsert =
@@ -342,7 +357,7 @@ defmodule Algolia do
     objects
     |> add_object_ids(id_attribute: id_attribute)
     |> build_batch_request(action)
-    |> send_batch_request(index)
+    |> send_batch_request(index, request_options)
   end
 
   # No need to add any objectID by default
@@ -372,12 +387,12 @@ defmodule Algolia do
     end
   end
 
-  defp send_batch_request(requests, index) do
+  defp send_batch_request(requests, index, request_options) do
     path = "/#{index}/batch"
     body = Jason.encode!(requests)
 
     :write
-    |> send_request(%{method: :post, path: path, body: body})
+    |> send_request(%{method: :post, path: path, body: body, options: request_options})
     |> inject_index_into_response(index)
   end
 
@@ -396,28 +411,30 @@ defmodule Algolia do
   @doc """
   Delete a object by its objectID
   """
-  def delete_object(_index, "") do
+  def delete_object(index, object_id, request_options \\ [])
+
+  def delete_object(_index, "", _request_options) do
     {:error, %InvalidObjectIDError{}}
   end
 
-  def delete_object(index, object_id) do
+  def delete_object(index, object_id, request_options) do
     path = "#{index}/#{object_id}"
 
     :write
-    |> send_request(%{method: :delete, path: path})
+    |> send_request(%{method: :delete, path: path, options: request_options})
     |> inject_index_into_response(index)
   end
 
   @doc """
   Delete multiple objects
   """
-  def delete_objects(index, object_ids) do
+  def delete_objects(index, object_ids, request_options \\ []) do
     object_ids
     |> Enum.map(fn id ->
       %{objectID: id}
     end)
     |> build_batch_request("deleteObject")
-    |> send_batch_request(index)
+    |> send_batch_request(index, request_options)
   end
 
   @doc """
