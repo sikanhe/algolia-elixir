@@ -89,14 +89,18 @@ defmodule Algolia do
     opts =
       opts
       |> Keyword.put(:query, query)
-      |> Enum.map(fn {k, v} ->
-        v = if is_list(v), do: Enum.join(v, ","), else: v
-        {k, v}
-      end)
+      |> to_query()
 
     path = index <> "?" <> URI.encode_query(opts)
     send_request(:read, %{method: :get, path: path, options: request_options})
   end
+
+  defp to_query(enumerable) do
+    Map.new(enumerable, fn {key, value} -> {key, to_param(value)} end)
+  end
+
+  defp to_param(value) when is_list(value), do: Enum.join(value, ",")
+  defp to_param(value), do: value
 
   @doc """
   Search for facet values
