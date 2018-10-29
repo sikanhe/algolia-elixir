@@ -165,17 +165,8 @@ defmodule Algolia do
   end
 
   defp send_request(read_or_write, request, curr_retry) do
-    url =
-      "https://"
-      |> Path.join(host(read_or_write, curr_retry))
-      |> Path.join("/1/indexes")
-      |> Path.join(request[:path])
-
-    headers = [
-      "X-Algolia-API-Key": api_key(),
-      "X-Algolia-Application-Id": application_id()
-    ]
-
+    url = request_url(read_or_write, curr_retry, request[:path])
+    headers = request_headers()
     body = request[:body] || ""
 
     request[:method]
@@ -196,6 +187,20 @@ defmodule Algolia do
       _ ->
         send_request(read_or_write, request, curr_retry + 1)
     end
+  end
+
+  defp request_url(read_or_write, retry, path) do
+    "https://"
+    |> Path.join(host(read_or_write, retry))
+    |> Path.join("/1/indexes")
+    |> Path.join(path)
+  end
+
+  defp request_headers() do
+    [
+      "X-Algolia-API-Key": api_key(),
+      "X-Algolia-Application-Id": application_id()
+    ]
   end
 
   @doc """
