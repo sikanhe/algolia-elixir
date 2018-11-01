@@ -271,7 +271,7 @@ defmodule Algolia do
     if id_attribute = opts[:id_attribute] do
       object[id_attribute] || object[to_string(id_attribute)] ||
         raise ArgumentError,
-          message: "Your object #{object} does not have a '#{id_attribute}' attribute"
+          message: "Your object does not have a '#{id_attribute}' attribute"
     else
       object["objectID"] || object[:objectID] ||
         raise ArgumentError,
