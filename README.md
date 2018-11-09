@@ -173,7 +173,7 @@ All write operations can be waited on by simply piping the response into wait/1
 
 
 Since the client polls the server to check for publishing status,
-You can specify a time between each tick of the poll, the default is 100 ms
+You can specify a time between each tick of the poll, the default is 1000 ms
 
 ```elixir
     "my_index" |> save_object(%{id: "123"}) |> wait(2_000)
@@ -192,7 +192,7 @@ You can also use the underlying wait_task function explicitly
 or with option
 
 ```elixir
-    wait(index, task_id, 1_000)
+    wait(index, task_id, 2_000)
 ```
 
 ### Index related operations
