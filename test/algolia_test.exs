@@ -350,4 +350,11 @@ defmodule AlgoliaTest do
     all_indexes = Enum.map(items, & &1["name"])
     refute index in all_indexes
   end
+
+  test "get index logs" do
+    {:ok, _} = search("test", "test query")
+
+    assert {:ok, %{"logs" => [log]}} = get_logs(indexName: "test", length: 1, type: :query)
+    assert %{"index" => "test", "query_params" => "query=test+query"} = log
+  end
 end

@@ -399,6 +399,15 @@ defmodule Algolia do
   @doc """
   Remove all objects matching a filter (including geo filters).
 
+  Allowed filter parameters:
+
+  * `filters`
+  * `facetFilters`
+  * `numericFilters`
+  * `aroundLatLng` and `aroundRadius` (these two need to be used together)
+  * `insideBoundingBox`
+  * `insidePolygon`
+
   ## Examples
 
       iex> Algolia.delete_by("index", filters: ["score < 30"])
@@ -510,6 +519,25 @@ defmodule Algolia do
   end
 
   defp inject_index_into_response(response, _index), do: response
+
+  @doc """
+  Get the logs of the latest search and indexing operations.
+
+  ## Options
+
+    * `:indexName` - Index for which log entries should be retrieved. When omitted,
+      log entries are retrieved across all indices.
+
+    * `:length` - Maximum number of entries to retrieve. Maximum allowed value: 1000.
+
+    * `:offset` - First entry to retrieve (zero-based). Log entries are sorted by
+      decreasing date, therefore 0 designates the most recent log entry.
+
+    * `:type` - Type of log to retrieve: `all` (default), `query`, `build` or `error`.
+  """
+  def get_logs(opts \\ []) do
+    send_request(:write, %{method: :get, path: Paths.logs(opts)})
+  end
 
   @doc """
   Wait for a task for an index to complete

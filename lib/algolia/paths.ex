@@ -43,6 +43,11 @@ defmodule Algolia.Paths do
 
   def settings(index), do: index(index) <> "/settings"
 
+  def logs(opts) do
+    params = Keyword.take(opts, [:indexName, :offset, :length, :type])
+    "/#{@version}/logs" <> to_query(params)
+  end
+
   defp to_query([]), do: ""
   defp to_query(params), do: "?" <> build_query(params)
 
