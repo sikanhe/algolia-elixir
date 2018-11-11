@@ -3,6 +3,8 @@ defmodule Algolia do
   Elixir implementation of Algolia search API, using Hackney for http requests
   """
 
+  alias Algolia.Paths
+
   defmodule MissingApplicationIDError do
     defexception message: """
                    The `application_id` settings is required to use Algolia. Please include your
@@ -46,15 +48,8 @@ defmodule Algolia do
   @doc """
   Multiple queries
   """
-  def multi(queries, opts \\ [strategy: :none]) do
-    params =
-      case opts[:strategy] do
-        :none -> "?strategy=none"
-        :stop_if_enough_matches -> "?strategy=stopIfEnoughMatches"
-        _ -> ""
-      end
-
-    path = "*/queries" <> params
+  def multi(queries, opts \\ []) do
+    path = Paths.multiple_queries(opts[:strategy])
     body = queries |> format_multi() |> Jason.encode!()
 
     send_request(:read, %{method: :post, path: path, body: body, options: opts[:request_options]})
@@ -86,21 +81,10 @@ defmodule Algolia do
   def search(index, query, opts \\ []) do
     {request_options, opts} = Keyword.pop(opts, :request_options)
 
-    opts =
-      opts
-      |> Keyword.put(:query, query)
-      |> to_query()
+    path = Paths.search(index, query, opts)
 
-    path = index <> "?" <> URI.encode_query(opts)
     send_request(:read, %{method: :get, path: path, options: request_options})
   end
-
-  defp to_query(enumerable) do
-    Map.new(enumerable, fn {key, value} -> {key, to_param(value)} end)
-  end
-
-  defp to_param(value) when is_list(value), do: Enum.join(value, ",")
-  defp to_param(value), do: value
 
   @doc """
   Search for facet values
@@ -152,7 +136,7 @@ defmodule Algolia do
           {:ok, map} | {:error, code :: integer, message :: binary}
   def search_for_facet_values(index, facet, text, query \\ %{})
       when is_binary(index) and is_binary(facet) and is_binary(text) do
-    path = index <> "/facets/" <> URI.encode(facet) <> "/query"
+    path = Paths.search_facet(index, facet)
 
     body =
       query
@@ -196,7 +180,6 @@ defmodule Algolia do
   defp request_url(read_or_write, retry, path) do
     "https://"
     |> Path.join(host(read_or_write, retry))
-    |> Path.join("/1/indexes")
     |> Path.join(path)
   end
 
@@ -215,7 +198,7 @@ defmodule Algolia do
   Get an object in an index by objectID
   """
   def get_object(index, object_id, opts \\ []) do
-    path = "#{index}/#{object_id}"
+    path = Paths.object(index, object_id)
 
     :read
     |> send_request(%{method: :get, path: path, options: opts[:request_options]})
@@ -232,7 +215,7 @@ defmodule Algolia do
       save_object(index, object, opts)
     else
       body = Jason.encode!(object)
-      path = "#{index}"
+      path = Paths.index(index)
 
       :write
       |> send_request(%{method: :post, path: path, body: body, options: opts[:request_options]})
@@ -285,7 +268,7 @@ defmodule Algolia do
 
   defp save_object(index, object, object_id, request_options) do
     body = Jason.encode!(object)
-    path = "#{index}/#{object_id}"
+    path = Paths.object(index, object_id)
 
     :write
     |> send_request(%{method: :put, path: path, body: body, options: request_options})
@@ -309,15 +292,7 @@ defmodule Algolia do
   """
   def partial_update_object(index, object, object_id, opts \\ [upsert?: true]) do
     body = Jason.encode!(object)
-
-    params =
-      if opts[:upsert?] do
-        ""
-      else
-        "?createIfNotExists=false"
-      end
-
-    path = "#{index}/#{object_id}/partial" <> URI.encode(params)
+    path = Paths.partial_object(index, object_id, opts[:upsert?])
 
     :write
     |> send_request(%{method: :post, path: path, body: body, options: opts[:request_options]})
@@ -372,7 +347,7 @@ defmodule Algolia do
   end
 
   defp send_batch_request(requests, index, request_options) do
-    path = "/#{index}/batch"
+    path = Paths.batch(index)
     body = Jason.encode!(requests)
 
     :write
@@ -402,7 +377,7 @@ defmodule Algolia do
   end
 
   def delete_object(index, object_id, opts) do
-    path = "#{index}/#{object_id}"
+    path = Paths.object(index, object_id)
 
     :write
     |> send_request(%{method: :delete, path: path, options: opts[:request_options]})
@@ -432,13 +407,13 @@ defmodule Algolia do
   def delete_by(index, opts) when is_list(opts) do
     {request_options, opts} = Keyword.pop(opts, :request_options)
 
-    path = "#{index}/deleteByQuery"
+    path = Paths.delete_by(index)
 
     body =
       opts
       |> sanitize_delete_by_opts()
       |> validate_delete_by_opts!()
-      |> to_query()
+      |> Map.new()
       |> Jason.encode!()
 
     :write
@@ -447,7 +422,7 @@ defmodule Algolia do
   end
 
   defp sanitize_delete_by_opts(opts) do
-    Keyword.drop(opts || [], [
+    Keyword.drop(opts, [
       :hitsPerPage,
       :attributesToRetrieve,
       "hitsPerPage",
@@ -465,17 +440,15 @@ defmodule Algolia do
   List all indexes
   """
   def list_indexes do
-    send_request(:read, %{method: :get, path: ""})
+    send_request(:read, %{method: :get, path: Paths.indexes()})
   end
 
   @doc """
   Deletes the index
   """
   def delete_index(index) do
-    path = "#{index}"
-
     :write
-    |> send_request(%{method: :delete, path: path})
+    |> send_request(%{method: :delete, path: Paths.index(index)})
     |> inject_index_into_response(index)
   end
 
@@ -483,10 +456,8 @@ defmodule Algolia do
   Clears all content of an index
   """
   def clear_index(index) do
-    path = "#{index}/clear"
-
     :write
-    |> send_request(%{method: :post, path: path})
+    |> send_request(%{method: :post, path: Paths.clear(index)})
     |> inject_index_into_response(index)
   end
 
@@ -495,9 +466,10 @@ defmodule Algolia do
   """
   def set_settings(index, settings) do
     body = Jason.encode!(settings)
+    path = Paths.settings(index)
 
     :write
-    |> send_request(%{method: :put, path: "/#{index}/settings", body: body})
+    |> send_request(%{method: :put, path: path, body: body})
     |> inject_index_into_response(index)
   end
 
@@ -506,7 +478,7 @@ defmodule Algolia do
   """
   def get_settings(index) do
     :read
-    |> send_request(%{method: :get, path: "/#{index}/settings"})
+    |> send_request(%{method: :get, path: Paths.settings(index)})
     |> inject_index_into_response(index)
   end
 
@@ -517,7 +489,7 @@ defmodule Algolia do
     body = Jason.encode!(%{operation: "move", destination: dst_index})
 
     :write
-    |> send_request(%{method: :post, path: "/#{src_index}/operation", body: body})
+    |> send_request(%{method: :post, path: Paths.operation(src_index), body: body})
     |> inject_index_into_response(src_index)
   end
 
@@ -528,7 +500,7 @@ defmodule Algolia do
     body = Jason.encode!(%{operation: "copy", destination: dst_index})
 
     :write
-    |> send_request(%{method: :post, path: "/#{src_index}/operation", body: body})
+    |> send_request(%{method: :post, path: Paths.operation(src_index), body: body})
     |> inject_index_into_response(src_index)
   end
 
@@ -544,7 +516,7 @@ defmodule Algolia do
   returns :ok when it's done
   """
   def wait_task(index, task_id, time_before_retry \\ 1000) do
-    case send_request(:write, %{method: :get, path: "#{index}/task/#{task_id}"}) do
+    case send_request(:write, %{method: :get, path: Paths.task(index, task_id)}) do
       {:ok, %{"status" => "published"}} ->
         :ok
 
