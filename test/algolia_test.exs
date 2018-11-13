@@ -71,6 +71,20 @@ defmodule AlgoliaTest do
     assert {:ok, %{"objectID" => ^object_id}} = get_object("test_1", id)
   end
 
+  describe "save_object/2" do
+    test "requires an objectID attribute" do
+      assert_raise ArgumentError, ~r/must have an objectID/, fn ->
+        save_object("test_1", %{"noObjectId" => "raises error"})
+      end
+    end
+
+    test "requires a valid attribute as object id" do
+      assert_raise ArgumentError, ~r/does not have a 'id' attribute/, fn ->
+        save_object("test_1", %{"noId" => "raises error"}, id_attribute: "id")
+      end
+    end
+  end
+
   test "search single index" do
     :rand.seed(:exs1024, :erlang.timestamp)
     count = :rand.uniform 10
