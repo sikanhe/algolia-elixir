@@ -6,6 +6,7 @@ defmodule AlgoliaTest do
   @indexes [
     "test", "test_1", "test_2", "test_3", "test_4",
     "multi_test_1", "multi_test_2",
+    "delete_by_test_1",
     "move_index_test_src", "move_index_test_dst",
     "copy_index_src", "copy_index_dst"
   ]
@@ -156,7 +157,7 @@ defmodule AlgoliaTest do
     docs = [
       %{family: "Diplaziopsidaceae", name: "D. cavaleriana"},
       %{family: "Diplaziopsidaceae", name: "H. marginatum"},
-      %{family: "Dipteridaceae", name: "D. nieuwenhuisii"},
+      %{family: "Dipteridaceae", name: "D. nieuwenhuisii"}
     ]
 
     {:ok, _} = "test_4" |> add_objects(docs) |> wait
@@ -188,8 +189,6 @@ defmodule AlgoliaTest do
 
     assert {:ok, _} = partial_update_object("test_2", %{update: "updated"}, object_id) |> wait
 
-
-
     {:ok, object} = get_object("test_2", object_id)
     assert object["update"] == "updated"
   end
@@ -200,8 +199,6 @@ defmodule AlgoliaTest do
     assert {:ok, _} =
       partial_update_object("test_2", %{}, id)
       |> wait
-
-
 
     {:ok, object} = get_object("test_2", id)
     assert object["objectID"] == id
@@ -264,6 +261,44 @@ defmodule AlgoliaTest do
 
     assert {:error, 404, _} = get_object("test_1", "delete_multipel_objects_1")
     assert {:error, 404, _} = get_object("test_1", "delete_multipel_objects_2")
+  end
+
+  describe "delete_by/2" do
+    test "deletes according to filters" do
+      {:ok, _} =
+        "delete_by_test_1"
+        |> set_settings(%{attributesForFaceting: ["filterOnly(score)"]})
+        |> wait
+
+      objects = [%{id: "gets deleted", score: 10}, %{id: "remains there", score: 20}]
+
+      {:ok, _} =
+        "delete_by_test_1"
+        |> save_objects(objects, id_attribute: :id)
+        |> wait
+
+      results =
+        "delete_by_test_1"
+        |> delete_by(filters: "score < 15")
+        |> wait
+
+      assert {:ok, _} = results
+
+      assert {:error, 404, _} = get_object("delete_by_test_1", "gets deleted")
+      assert {:ok, _} = get_object("delete_by_test_1", "remains there")
+    end
+
+    test "requires opts" do
+      assert_raise ArgumentError, ~r/opts are required/, fn ->
+        delete_by("delete_by_test_1", [])
+      end
+    end
+
+    test "ignores hitsPerPage and attributesToRetrieve opts" do
+      assert_raise ArgumentError, ~r/opts are required/, fn ->
+        delete_by("delete_by_test_1", hitsPerPage: 10, attributesToRetrieve: [])
+      end
+    end
   end
 
   test "settings" do

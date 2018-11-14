@@ -89,14 +89,18 @@ defmodule Algolia do
     opts =
       opts
       |> Keyword.put(:query, query)
-      |> Enum.map(fn {k, v} ->
-        v = if is_list(v), do: Enum.join(v, ","), else: v
-        {k, v}
-      end)
+      |> to_query()
 
     path = index <> "?" <> URI.encode_query(opts)
     send_request(:read, %{method: :get, path: path, options: request_options})
   end
+
+  defp to_query(enumerable) do
+    Map.new(enumerable, fn {key, value} -> {key, to_param(value)} end)
+  end
+
+  defp to_param(value) when is_list(value), do: Enum.join(value, ",")
+  defp to_param(value), do: value
 
   @doc """
   Search for facet values
@@ -416,6 +420,46 @@ defmodule Algolia do
     |> build_batch_request("deleteObject")
     |> send_batch_request(index, opts[:request_options])
   end
+
+  @doc """
+  Remove all objects matching a filter (including geo filters).
+
+  ## Examples
+
+      iex> Algolia.delete_by("index", filters: ["score < 30"])
+      {:ok, %{"indexName" => "index", "taskId" => 42, "deletedAt" => "2018-10-30T15:33:13.556Z"}}
+  """
+  def delete_by(index, opts) when is_list(opts) do
+    {request_options, opts} = Keyword.pop(opts, :request_options)
+
+    path = "#{index}/deleteByQuery"
+
+    body =
+      opts
+      |> sanitize_delete_by_opts()
+      |> validate_delete_by_opts!()
+      |> to_query()
+      |> Jason.encode!()
+
+    :write
+    |> send_request(%{method: :post, path: path, body: body, options: request_options})
+    |> inject_index_into_response(index)
+  end
+
+  defp sanitize_delete_by_opts(opts) do
+    Keyword.drop(opts || [], [
+      :hitsPerPage,
+      :attributesToRetrieve,
+      "hitsPerPage",
+      "attributesToRetrieve"
+    ])
+  end
+
+  defp validate_delete_by_opts!([]) do
+    raise ArgumentError, message: "opts are required, use `clear_index/1` to wipe the index."
+  end
+
+  defp validate_delete_by_opts!(opts), do: opts
 
   @doc """
   List all indexes
