@@ -350,4 +350,24 @@ defmodule AlgoliaTest do
     all_indexes = Enum.map(items, & &1["name"])
     refute index in all_indexes
   end
+
+  test "get index logs" do
+    {:ok, _} = search("test", "test query")
+
+    assert {:ok, %{"logs" => [log]}} = get_logs(indexName: "test", length: 1, type: :query)
+    assert %{"index" => "test", "query_params" => "query=test+query"} = log
+  end
+
+  test "forwards extra HTTP headers" do
+    opts = [headers: [{"X-Forwarded-For", "1.2.3.4"}]]
+
+    {:ok, _} =
+      "test"
+      |> add_object(%{text: "hello"}, request_options: opts)
+      |> wait
+
+    {:ok, %{"logs" => [log]}} = get_logs(indexName: "test", length: 1, type: :build)
+    %{"index" => "test", "query_headers" => headers} = log
+    assert headers =~ ~r/X-Forwarded-For: 1\.2\.3\.4/
+  end
 end
