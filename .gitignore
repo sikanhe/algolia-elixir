@@ -6,3 +6,4 @@
 erl_crash.dump
 *.ez
 search-*.tar
+.elixir_ls

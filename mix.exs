@@ -30,8 +30,8 @@ defmodule Algolia.Mixfile do
       {:hackney, "~> 1.9 or ~> 1.10"},
       {:jason, "~> 1.0"},
       # Docs
-      {:ex_doc, "~> 0.15", only: :docs},
-      {:inch_ex, ">= 0.0.0", only: :docs}
+      {:ex_doc, "~> 0.19", only: :dev},
+      {:inch_ex, ">= 0.0.0", only: :dev}
     ]
   end
 end
