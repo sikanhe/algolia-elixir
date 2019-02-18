@@ -370,4 +370,36 @@ defmodule AlgoliaTest do
     %{"index" => "test", "query_headers" => headers} = log
     assert headers =~ ~r/X-Forwarded-For: 1\.2\.3\.4/
   end
+
+  test "create or update synonyms" do
+    synonyms = [
+      %{
+        "objectID" => "1550092819012",
+        "synonyms" => ["big", "large", "huge"],
+        "type" => "synonym"
+      },
+      %{
+        "synonyms" => ["tiny"],
+        "type" => "oneWaySynonym",
+        "objectID" => "785493758483",
+        "input" => "little"
+      }
+    ]
+
+    {:ok, _} =
+      @settings_test_index
+      |> batch_synonyms(synonyms, replace_existing_synonyms: true)
+      |> wait()
+
+    hits = @settings_test_index |> export_synonyms() |> Enum.map(& &1)
+
+    for {:ok, hit} <- hits do
+      synonym = Enum.find(synonyms, &(&1["objectID"] == hit["objectID"]))
+
+      assert synonym["synonyms"] == hit["synonyms"]
+      assert synonym["type"] == hit["type"]
+      assert synonym["objectID"] == hit["objectID"]
+      assert synonym["input"] == hit["input"]
+    end
+  end
 end

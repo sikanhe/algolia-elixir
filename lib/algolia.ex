@@ -492,6 +492,111 @@ defmodule Algolia do
   end
 
   @doc """
+  Get all the synonyms of a index.
+
+  Only the index is required
+
+  ## Examples
+
+      iex> Algolia.export_synonyms("index")
+      {:ok, %{
+        "indexName" => "index",
+        "nbHits" => 33,
+        "hits" => [%{
+          "objectID" => "1539816124475_0",
+          "synonyms" => ["big", "large"],
+          "type" => "synonym"
+          "_highlightResult" => %{...}
+        }, ...]
+      }}
+  """
+  def export_synonyms(index) do
+    get_all_paginated_hits(index, &search_synonyms/3)
+  end
+
+  defp get_all_paginated_hits(index, search, hits_per_page \\ 100) do
+    0
+    |> Stream.iterate(&(&1 + 1))
+    |> Stream.flat_map(fn page -> get_page_hits(index, page, hits_per_page, search) end)
+    |> Stream.take_while(&(&1 != :stop))
+  end
+
+  defp get_page_hits(index, page, hits_per_page, search) do
+    case search.(index, "", page: page, hits_per_page: hits_per_page) do
+      {:ok, %{"hits" => hits, "nbPages" => pages}} when page + 1 < pages -> page_hits(hits)
+      {:ok, %{"hits" => hits}} -> page_hits(hits) ++ [:stop]
+      error -> [error, :stop]
+    end
+  end
+
+  defp page_hits(hits) do
+    Enum.map(hits, &{:ok, Map.drop(&1, ["_highlightResult"])})
+  end
+
+  @doc """
+  Search for synonyms of a index matching a query
+
+  Allowed parameters:
+
+  * `query` Required
+  * `type` Defaults to `""`(all). Allowed the types: `"synonym,oneWaySynonym,altCorrection1,altCorrection2,placeholder"`
+  * `page`
+  * `hitsPerPage`
+
+  ## Examples
+
+      iex> Algolia.search_synonyms("index", "query", hits_per_page: 20)
+      {:ok, %{
+        "indexName" => "index",
+        "nbHits" => 33,
+        "hits" => [%{
+          "objectID" => "1539816124475_0",
+          "synonyms" => ["big", "large"],
+          "type" => "synonym"
+          "_highlightResult" => %{...}
+        }, ...]
+      }}
+  """
+  def search_synonyms(index, query, opts \\ []) do
+    body =
+      opts
+      |> Enum.into(%{})
+      |> Map.put("query", query)
+      |> Map.put("page", opts[:page] || 0)
+      |> Map.put("hitsPerPage", opts[:hits_per_page] || 20)
+      |> Map.drop([:page, :hits_per_page])
+      |> Jason.encode!()
+
+    :write
+    |> send_request(%{method: :post, path: Paths.search_synonyms(index), body: body})
+    |> inject_index_into_response(index)
+  end
+
+  @doc """
+  Create or update an list of synonyms.
+
+  Allowed params:
+  * `forwardToReplicas`
+  * `replaceExistingSynonyms`
+  * `synonyms` Required: With [synonyms objects](https://www.algolia.com/doc/api-reference/api-methods/save-synonym/#method-param-synonym-object).
+  * - `objectID` Required: If the Id do not exist it will be created.
+  * - `type` Required: Allowed the types: `"synonym,oneWaySynonym,altCorrection1,altCorrection2,placeholder"`.
+  * - `synonyms` Required if type=synonym or type=oneWaySynonym: List of strings.
+  * - `input` Required if type=oneWaySynonym.
+  * - `word` Required if type=altCorrection1 or type=altCorrection2.
+  * - `corrections` Required if type=altCorrection1 or type=altCorrection2
+  * - `placeholder` Required if type=placeholder
+  * - `replacements` Required if type=placeholder
+  """
+  def batch_synonyms(index, batch, opts \\ []) do
+    body = Jason.encode!(batch)
+
+    :write
+    |> send_request(%{method: :post, path: Paths.batch_synonyms(index, opts), body: body})
+    |> inject_index_into_response(index)
+  end
+
+  @doc """
   Moves an index to new one
   """
   def move_index(src_index, dst_index) do
