@@ -597,6 +597,53 @@ defmodule Algolia do
   end
 
   @doc """
+  Search for query rules of a index matching a query
+
+  Allowed parameters:
+
+  * `query` Required
+  * `page`
+  * `hitsPerPage`
+  """
+  def search_rules(index, query, opts \\ []) do
+    body =
+      opts
+      |> Enum.into(%{})
+      |> Map.put("query", query)
+      |> Map.put("page", opts[:page] || 0)
+      |> Map.put("hitsPerPage", opts[:hits_per_page] || 20)
+      |> Map.drop([:page, :hits_per_page])
+      |> Jason.encode!()
+
+    :write
+    |> send_request(%{method: :post, path: Paths.search_rules(index), body: body})
+    |> inject_index_into_response(index)
+  end
+
+  @doc """
+  Get all the query rules of a index.
+
+  Only the index is required
+  """
+  def export_rules(index) do
+    get_all_paginated_hits(index, &search_rules/3)
+  end
+
+  @doc """
+  Create or update an list of synonyms.
+
+  Allowed params:
+
+  """
+  def batch_rules(index, batch, opts \\ []) do
+    body = Jason.encode!(batch)
+
+    :write
+    |> send_request(%{method: :post, path: Paths.batch_rules(index, opts), body: body})
+    |> inject_index_into_response(index)
+  end
+
+  @doc """
   Moves an index to new one
   """
   def move_index(src_index, dst_index) do
