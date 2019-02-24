@@ -57,7 +57,7 @@ defmodule Algolia.Paths do
   def search_rules(index), do: rules(index) <> "/search"
 
   def batch_rules(index, opts \\ []) do
-    params = Keyword.take(opts, [:forward_to_replicas, :replace_existing_synonyms])
+    params = Keyword.take(opts, [:forward_to_replicas, :clearExistingRules])
     rules(index) <> "/batch" <> to_query(params)
   end
 
