@@ -575,18 +575,19 @@ defmodule Algolia do
   @doc """
   Create or update an list of synonyms.
 
-  Allowed params:
-  * `forwardToReplicas`
-  * `replaceExistingSynonyms`
   * `synonyms` Required: With [synonyms objects](https://www.algolia.com/doc/api-reference/api-methods/save-synonym/#method-param-synonym-object).
   * - `objectID` Required: If the Id do not exist it will be created.
   * - `type` Required: Allowed the types: `"synonym,oneWaySynonym,altCorrection1,altCorrection2,placeholder"`.
   * - `synonyms` Required if type=synonym or type=oneWaySynonym: List of strings.
   * - `input` Required if type=oneWaySynonym.
   * - `word` Required if type=altCorrection1 or type=altCorrection2.
-  * - `corrections` Required if type=altCorrection1 or type=altCorrection2
-  * - `placeholder` Required if type=placeholder
-  * - `replacements` Required if type=placeholder
+  * - `corrections` Required if type=altCorrection1 or type=altCorrection2.
+  * - `placeholder` Required if type=placeholder.
+  * - `replacements` Required if type=placeholder.
+
+  Allowed params:
+  * `forwardToReplicas`
+  * `replaceExistingSynonyms`
   """
   def batch_synonyms(index, batch, opts \\ []) do
     body = Jason.encode!(batch)
@@ -630,10 +631,29 @@ defmodule Algolia do
   end
 
   @doc """
-  Create or update an list of synonyms.
+  Create or update an list of Query Rules.
+
+  * `batch` Required: list with [Query Rules](https://www.algolia.com/doc/api-reference/api-methods/save-rule/#method-param-rule)
+  * - `objectID` Required: If the Id do not exist it will be created.
+  * - `description` To ease searching for rules and presenting them to human readers.
+  * - `enabled` Whether the rule is enabled. Disabled rules remain in the index, but are not applied at query time.
+  * - `validity` By default, rules are permanently valid. When validity periods are specified, the rule applies only during those periods.
+  * - `condition` Required: [condition](https://www.algolia.com/doc/api-reference/api-methods/save-rule/?language=javascript#method-param-condition-2)
+  * -- `pattern` Required: Query patterns are expressed as a string with a specific syntax.
+  * -- `anchoring` Required: Enum `["is", "startsWith", "endsWith", "contains"]`.
+  * -- `context`: Rule context. When specified, the rule is contextual and applies only when the same context is specified at query time.
+  * - `consequence` Required at least 1 [consequence](https://www.algolia.com/doc/api-reference/api-methods/save-rule/?language=javascript#method-param-consequence-2)
+  * -- `params`: Additional search parameters. Any valid search parameter is allowed.
+  * -- `promote`: List with objects to promote as hits.
+  * --- `objectID`
+  * --- `position`
+  * -- `hide`: List with objects to hide from hits.
+  * --- `objectID`
+  * -- `userData`: Custom JSON object that will be appended to the userData array in the response.
 
   Allowed params:
-
+  * `forwardToReplicas` When true, the change is forwarded to all replicas of this index.
+  * `clearExistingRules` When true, existing rules are cleared before adding this batch.
   """
   def batch_rules(index, batch, opts \\ []) do
     body = Jason.encode!(batch)
