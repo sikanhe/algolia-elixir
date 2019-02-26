@@ -48,8 +48,7 @@ defmodule Algolia.Paths do
   def search_synonyms(index), do: synonyms(index) <> "/search"
 
   def batch_synonyms(index, opts \\ []) do
-    params = Keyword.take(opts, [:forward_to_replicas, :replace_existing_synonyms])
-    synonyms(index) <> "/batch" <> to_query(params)
+    synonyms(index) <> "/batch" <> to_query(opts)
   end
 
   def rules(index), do: index(index) <> "/rules"
@@ -57,13 +56,11 @@ defmodule Algolia.Paths do
   def search_rules(index), do: rules(index) <> "/search"
 
   def batch_rules(index, opts \\ []) do
-    params = Keyword.take(opts, [:forward_to_replicas, :clearExistingRules])
-    rules(index) <> "/batch" <> to_query(params)
+    rules(index) <> "/batch" <> to_query(opts)
   end
 
-  def logs(opts) do
-    params = Keyword.take(opts, [:indexName, :offset, :length, :type])
-    "/#{@version}/logs" <> to_query(params)
+  def logs(opts \\ []) do
+    "/#{@version}/logs" <> to_query(opts)
   end
 
   defp to_query([]), do: ""

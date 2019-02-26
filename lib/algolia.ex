@@ -586,8 +586,8 @@ defmodule Algolia do
   * - `replacements` Required if type=placeholder.
 
   Allowed params:
-  * `forward_to_replicas`
-  * `replace_existing_synonyms`
+  * `forwardToReplicas`
+  * `replaceExistingSynonyms`
   """
   def batch_synonyms(index, batch, opts \\ []) do
     body = Jason.encode!(batch)
@@ -652,8 +652,8 @@ defmodule Algolia do
   * -- `userData`: Custom JSON object that will be appended to the userData array in the response.
 
   Allowed params:
-  * `forward_to_replicas` When true, the change is forwarded to all replicas of this index.
-  * `clear_existing_rules` When true, existing rules are cleared before adding this batch.
+  * `forwardToReplicas` When true, the change is forwarded to all replicas of this index.
+  * `clearExistingRules` When true, existing rules are cleared before adding this batch.
   """
   def batch_rules(index, batch, opts \\ []) do
     body = Jason.encode!(batch)
