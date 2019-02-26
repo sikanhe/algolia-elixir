@@ -41,7 +41,7 @@ defmodule Algolia.Paths do
 
   def delete_by(index), do: index(index) <> "/deleteByQuery"
 
-  def settings(index), do: index(index) <> "/settings"
+  def settings(index, opts \\ []), do: index(index) <> "/settings" <> to_query(opts)
 
   def synonyms(index), do: index(index) <> "/synonyms"
 

@@ -473,9 +473,9 @@ defmodule Algolia do
   @doc """
   Set the settings of a index
   """
-  def set_settings(index, settings) do
+  def set_settings(index, settings, opts \\ []) do
     body = Jason.encode!(settings)
-    path = Paths.settings(index)
+    path = Paths.settings(index, opts)
 
     :write
     |> send_request(%{method: :put, path: path, body: body})
