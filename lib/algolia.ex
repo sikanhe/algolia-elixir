@@ -78,12 +78,11 @@ defmodule Algolia do
   @doc """
   Search a single index
   """
-  def search(index, query, opts \\ []) do
-    {request_options, opts} = Keyword.pop(opts, :request_options)
+  def search(index, opts) do
+    body = Jason.encode!(opts)
+    path = Paths.search(index)
 
-    path = Paths.search(index, query, opts)
-
-    send_request(:read, %{method: :get, path: path, options: request_options})
+    send_request(:read, %{method: :post, path: path, body: body})
   end
 
   @doc """
