@@ -29,8 +29,12 @@ defmodule Algolia.Paths do
   end
 
   def search(index, query, opts) do
-    params = Keyword.put(opts, :query, query)
-    index(index) <> to_query(params)
+    if opts[:request_method] != :post do
+      params = Keyword.put(opts, :query, query)
+      index(index) <> to_query(params)
+    else
+      index(index) <> "/query"
+    end
   end
 
   def search_facet(index, facet) do

@@ -83,7 +83,17 @@ defmodule Algolia do
 
     path = Paths.search(index, query, opts)
 
-    send_request(:read, %{method: :get, path: path, options: request_options})
+    {request_method, opts} = Keyword.pop(opts, :request_method)
+
+    request = if request_method == :post do
+      %{method: :post, path: path, body: opts ++ [query: query]
+                                         |> Enum.into(%{})
+                                         |> Jason.encode!()}
+    else
+      %{method: :get, path: path, options: request_options}
+    end
+
+    send_request(:read, request)
   end
 
   @doc """
