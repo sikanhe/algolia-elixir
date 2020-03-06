@@ -510,8 +510,8 @@ defmodule Algolia do
         }, ...]
       }}
   """
-  def export_synonyms(index) do
-    get_all_paginated_hits(index, &search_synonyms/3)
+  def export_synonyms(index, hits_per_page \\ 100) do
+    get_all_paginated_hits(index, &search_synonyms/3, hits_per_page)
   end
 
   defp get_all_paginated_hits(index, search, hits_per_page \\ 100) do
@@ -523,9 +523,17 @@ defmodule Algolia do
 
   defp get_page_hits(index, page, hits_per_page, search) do
     case search.(index, "", page: page, hits_per_page: hits_per_page) do
-      {:ok, %{"hits" => hits, "nbPages" => pages}} when page + 1 < pages -> page_hits(hits)
-      {:ok, %{"hits" => hits}} -> page_hits(hits) ++ [:stop]
-      error -> [error, :stop]
+      {:ok, %{"hits" => hits, "nbPages" => pages}} when page + 1 < pages ->
+        page_hits(hits)
+
+      {:ok, %{"hits" => hits, "nbHits" => nbHits}} when page + 1 < nbHits / hits_per_page ->
+        page_hits(hits)
+
+      {:ok, %{"hits" => hits}} ->
+        page_hits(hits) ++ [:stop]
+
+      error ->
+        [error, :stop]
     end
   end
 

@@ -403,6 +403,44 @@ defmodule AlgoliaTest do
     end
   end
 
+  test "export the complete synonyms list" do
+    synonyms = [
+      %{
+        "objectID" => "1550092819012",
+        "synonyms" => ["big", "large", "huge"],
+        "type" => "synonym"
+      },
+      %{
+        "synonyms" => ["tiny"],
+        "type" => "oneWaySynonym",
+        "objectID" => "785493758483",
+        "input" => "little"
+      },
+      %{
+        "synonyms" => ["small"],
+        "type" => "oneWaySynonym",
+        "objectID" => "785493768501",
+        "input" => "little"
+      }
+    ]
+
+    {:ok, _} =
+      @settings_test_index
+      |> batch_synonyms(synonyms, replace_existing_synonyms: true)
+      |> wait()
+
+    hits = @settings_test_index |> export_synonyms(2) |> Enum.map(& &1)
+
+    for {:ok, hit} <- hits do
+      synonym = Enum.find(synonyms, &(&1["objectID"] == hit["objectID"]))
+
+      assert synonym["synonyms"] == hit["synonyms"]
+      assert synonym["type"] == hit["type"]
+      assert synonym["objectID"] == hit["objectID"]
+      assert synonym["input"] == hit["input"]
+    end
+  end
+
   test "create or update rules" do
     rules = [
       %{
