@@ -406,21 +406,21 @@ defmodule AlgoliaTest do
   test "export the complete synonyms list" do
     synonyms = [
       %{
-        "objectID" => "1550092819012",
+        "objectID" => "1550092817624",
         "synonyms" => ["big", "large", "huge"],
         "type" => "synonym"
       },
       %{
         "synonyms" => ["tiny"],
         "type" => "oneWaySynonym",
-        "objectID" => "785493758483",
+        "objectID" => "785493759172",
         "input" => "little"
       },
       %{
-        "synonyms" => ["small"],
+        "synonyms" => ["short"],
         "type" => "oneWaySynonym",
         "objectID" => "785493768501",
-        "input" => "little"
+        "input" => "small"
       }
     ]
 
