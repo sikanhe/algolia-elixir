@@ -383,6 +383,12 @@ defmodule AlgoliaTest do
         "type" => "oneWaySynonym",
         "objectID" => "785493758483",
         "input" => "little"
+      },
+      %{
+        "synonyms" => ["short"],
+        "type" => "oneWaySynonym",
+        "objectID" => "785493768501",
+        "input" => "small"
       }
     ]
 
