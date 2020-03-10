@@ -397,9 +397,11 @@ defmodule AlgoliaTest do
       |> batch_synonyms(synonyms, replace_existing_synonyms: true)
       |> wait()
 
-    hits = @settings_test_index |> export_synonyms(2) |> Enum.map(& &1)
+    {:ok, hits} = @settings_test_index |> export_synonyms(2) |> Enum.map(& &1)
 
-    for {:ok, hit} <- hits do
+    assert Enum.count(synonyms) == Enum.count(hits)
+
+    for hit <- hits do
       synonym = Enum.find(synonyms, &(&1["objectID"] == hit["objectID"]))
 
       assert synonym["synonyms"] == hit["synonyms"]
