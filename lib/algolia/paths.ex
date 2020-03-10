@@ -41,11 +41,26 @@ defmodule Algolia.Paths do
 
   def delete_by(index), do: index(index) <> "/deleteByQuery"
 
-  def settings(index), do: index(index) <> "/settings"
+  def settings(index, opts \\ []), do: index(index) <> "/settings" <> to_query(opts)
 
-  def logs(opts) do
-    params = Keyword.take(opts, [:indexName, :offset, :length, :type])
-    "/#{@version}/logs" <> to_query(params)
+  def synonyms(index), do: index(index) <> "/synonyms"
+
+  def search_synonyms(index), do: synonyms(index) <> "/search"
+
+  def batch_synonyms(index, opts \\ []) do
+    synonyms(index) <> "/batch" <> to_query(opts)
+  end
+
+  def rules(index), do: index(index) <> "/rules"
+
+  def search_rules(index), do: rules(index) <> "/search"
+
+  def batch_rules(index, opts \\ []) do
+    rules(index) <> "/batch" <> to_query(opts)
+  end
+
+  def logs(opts \\ []) do
+    "/#{@version}/logs" <> to_query(opts)
   end
 
   defp to_query([]), do: ""

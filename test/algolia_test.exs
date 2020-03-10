@@ -370,4 +370,108 @@ defmodule AlgoliaTest do
     %{"index" => "test", "query_headers" => headers} = log
     assert headers =~ ~r/X-Forwarded-For: 1\.2\.3\.4/
   end
+
+  test "create or update synonyms" do
+    synonyms = [
+      %{
+        "objectID" => "1550092817624",
+        "synonyms" => ["big", "large", "huge"],
+        "type" => "synonym"
+      },
+      %{
+        "synonyms" => ["tiny"],
+        "type" => "oneWaySynonym",
+        "objectID" => "785493759172",
+        "input" => "little"
+      },
+      %{
+        "synonyms" => ["short"],
+        "type" => "oneWaySynonym",
+        "objectID" => "785493768501",
+        "input" => "small"
+      }
+    ]
+
+    {:ok, _} =
+      @settings_test_index
+      |> batch_synonyms(synonyms, replace_existing_synonyms: true)
+      |> wait()
+
+    hits = @settings_test_index |> export_synonyms(2) |> Enum.map(& &1)
+
+    assert Enum.count(synonyms) == Enum.count(hits)
+
+    for {:ok, hit} <- hits do
+      synonym = Enum.find(synonyms, &(&1["objectID"] == hit["objectID"]))
+
+      assert synonym["synonyms"] == hit["synonyms"]
+      assert synonym["type"] == hit["type"]
+      assert synonym["objectID"] == hit["objectID"]
+      assert synonym["input"] == hit["input"]
+    end
+  end
+
+  test "create or update rules" do
+    rules = [
+      %{
+        "condition" => %{
+          "anchoring" => "contains",
+          "pattern" => "name"
+        },
+        "consequence" => %{
+          "params" => %{
+            "query" => %{
+              "edits" => [
+                %{
+                  "delete" => "name",
+                  "type" => "remove"
+                }
+              ]
+            }
+          }
+        },
+        "description" => "",
+        "objectID" => "1550012768674"
+      },
+      %{
+        "condition" => %{
+          "anchoring" => "contains",
+          "pattern" => "yellow"
+        },
+        "consequence" => %{
+          "params" => %{
+            "query" => %{
+              "edits" => [
+                %{
+                  "type" => "replace",
+                  "delete" => "yellow",
+                  "insert" => "blue"
+                }
+              ]
+            }
+          }
+        },
+        "description" => "",
+        "enabled" => true,
+        "objectID" => "1548387674495"
+      }
+    ]
+
+    {:ok, _} =
+      @settings_test_index
+      |> batch_rules(rules, replace_existing_synonyms: true)
+      |> wait()
+
+    hits = @settings_test_index |> export_rules() |> Enum.map(& &1)
+
+    for {:ok, hit} <- hits do
+      query_rule = Enum.find(rules, &(&1["objectID"] == hit["objectID"]))
+
+      assert query_rule["condition"] == hit["condition"]
+      assert query_rule["consequence"] == hit["consequence"]
+      assert query_rule["description"] == hit["description"]
+      assert query_rule["enabled"] == hit["enabled"]
+      assert query_rule["objectID"] == hit["objectID"]
+    end
+  end
 end

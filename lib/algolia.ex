@@ -473,9 +473,9 @@ defmodule Algolia do
   @doc """
   Set the settings of a index
   """
-  def set_settings(index, settings) do
+  def set_settings(index, settings, opts \\ []) do
     body = Jason.encode!(settings)
-    path = Paths.settings(index)
+    path = Paths.settings(index, opts)
 
     :write
     |> send_request(%{method: :put, path: path, body: body})
@@ -488,6 +488,186 @@ defmodule Algolia do
   def get_settings(index) do
     :read
     |> send_request(%{method: :get, path: Paths.settings(index)})
+    |> inject_index_into_response(index)
+  end
+
+  @doc """
+  Get all the synonyms of a index.
+
+  Only the index is required
+
+  ## Examples
+
+      iex> Algolia.export_synonyms("index")
+      {:ok, %{
+        "indexName" => "index",
+        "nbHits" => 33,
+        "hits" => [%{
+          "objectID" => "1539816124475_0",
+          "synonyms" => ["big", "large"],
+          "type" => "synonym"
+          "_highlightResult" => %{...}
+        }, ...]
+      }}
+  """
+  def export_synonyms(index, hits_per_page \\ 100) do
+    get_all_paginated_hits(index, &search_synonyms/3, hits_per_page)
+  end
+
+  defp get_all_paginated_hits(index, search, hits_per_page \\ 100) do
+    0
+    |> Stream.iterate(&(&1 + 1))
+    |> Stream.flat_map(fn page -> get_page_hits(index, page, hits_per_page, search) end)
+    |> Stream.take_while(&(&1 != :stop))
+  end
+
+  defp get_page_hits(index, page, hits_per_page, search) do
+    case search.(index, "", page: page, hits_per_page: hits_per_page) do
+      {:ok, %{"hits" => hits, "nbPages" => pages}} when page + 1 < pages ->
+        page_hits(hits)
+
+      {:ok, %{"hits" => hits, "nbHits" => nbHits}} when page + 1 < nbHits / hits_per_page ->
+        page_hits(hits)
+
+      {:ok, %{"hits" => hits}} ->
+        page_hits(hits) ++ [:stop]
+
+      error ->
+        [error, :stop]
+    end
+  end
+
+  defp page_hits(hits) do
+    Enum.map(hits, &{:ok, Map.drop(&1, ["_highlightResult"])})
+  end
+
+  @doc """
+  Search for synonyms of a index matching a query
+
+  Allowed parameters:
+
+  * `query` Required
+  * `type` Defaults to `""`(all). Allowed the types: `"synonym,oneWaySynonym,altCorrection1,altCorrection2,placeholder"`
+  * `page`
+  * `hitsPerPage`
+
+  ## Examples
+
+      iex> Algolia.search_synonyms("index", "query", hits_per_page: 20)
+      {:ok, %{
+        "indexName" => "index",
+        "nbHits" => 33,
+        "hits" => [%{
+          "objectID" => "1539816124475_0",
+          "synonyms" => ["big", "large"],
+          "type" => "synonym"
+          "_highlightResult" => %{...}
+        }, ...]
+      }}
+  """
+  def search_synonyms(index, query, opts \\ []) do
+    body =
+      opts
+      |> Enum.into(%{})
+      |> Map.put("query", query)
+      |> Map.put("page", opts[:page] || 0)
+      |> Map.put("hitsPerPage", opts[:hits_per_page] || 20)
+      |> Map.drop([:page, :hits_per_page])
+      |> Jason.encode!()
+
+    :write
+    |> send_request(%{method: :post, path: Paths.search_synonyms(index), body: body})
+    |> inject_index_into_response(index)
+  end
+
+  @doc """
+  Create or update an list of synonyms.
+
+  * `synonyms` Required: With [synonyms objects](https://www.algolia.com/doc/api-reference/api-methods/save-synonym/#method-param-synonym-object).
+  * - `objectID` Required: If the Id do not exist it will be created.
+  * - `type` Required: Allowed the types: `"synonym,oneWaySynonym,altCorrection1,altCorrection2,placeholder"`.
+  * - `synonyms` Required if type=synonym or type=oneWaySynonym: List of strings.
+  * - `input` Required if type=oneWaySynonym.
+  * - `word` Required if type=altCorrection1 or type=altCorrection2.
+  * - `corrections` Required if type=altCorrection1 or type=altCorrection2.
+  * - `placeholder` Required if type=placeholder.
+  * - `replacements` Required if type=placeholder.
+
+  Allowed params:
+  * `forwardToReplicas`
+  * `replaceExistingSynonyms`
+  """
+  def batch_synonyms(index, batch, opts \\ []) do
+    body = Jason.encode!(batch)
+
+    :write
+    |> send_request(%{method: :post, path: Paths.batch_synonyms(index, opts), body: body})
+    |> inject_index_into_response(index)
+  end
+
+  @doc """
+  Search for query rules of a index matching a query
+
+  Allowed parameters:
+
+  * `query` Required
+  * `page`
+  * `hitsPerPage`
+  """
+  def search_rules(index, query, opts \\ []) do
+    body =
+      opts
+      |> Enum.into(%{})
+      |> Map.put("query", query)
+      |> Map.put("page", opts[:page] || 0)
+      |> Map.put("hitsPerPage", opts[:hits_per_page] || 20)
+      |> Map.drop([:page, :hits_per_page])
+      |> Jason.encode!()
+
+    :write
+    |> send_request(%{method: :post, path: Paths.search_rules(index), body: body})
+    |> inject_index_into_response(index)
+  end
+
+  @doc """
+  Get all the query rules of a index.
+
+  Only the index is required
+  """
+  def export_rules(index) do
+    get_all_paginated_hits(index, &search_rules/3)
+  end
+
+  @doc """
+  Create or update an list of Query Rules.
+
+  * `batch` Required: list with [Query Rules](https://www.algolia.com/doc/api-reference/api-methods/save-rule/#method-param-rule)
+  * - `objectID` Required: If the Id do not exist it will be created.
+  * - `description` To ease searching for rules and presenting them to human readers.
+  * - `enabled` Whether the rule is enabled. Disabled rules remain in the index, but are not applied at query time.
+  * - `validity` By default, rules are permanently valid. When validity periods are specified, the rule applies only during those periods.
+  * - `condition` Required: [condition](https://www.algolia.com/doc/api-reference/api-methods/save-rule/?language=javascript#method-param-condition-2)
+  * -- `pattern` Required: Query patterns are expressed as a string with a specific syntax.
+  * -- `anchoring` Required: Enum `["is", "startsWith", "endsWith", "contains"]`.
+  * -- `context`: Rule context. When specified, the rule is contextual and applies only when the same context is specified at query time.
+  * - `consequence` Required at least 1 [consequence](https://www.algolia.com/doc/api-reference/api-methods/save-rule/?language=javascript#method-param-consequence-2)
+  * -- `params`: Additional search parameters. Any valid search parameter is allowed.
+  * -- `promote`: List with objects to promote as hits.
+  * --- `objectID`
+  * --- `position`
+  * -- `hide`: List with objects to hide from hits.
+  * --- `objectID`
+  * -- `userData`: Custom JSON object that will be appended to the userData array in the response.
+
+  Allowed params:
+  * `forwardToReplicas` When true, the change is forwarded to all replicas of this index.
+  * `clearExistingRules` When true, existing rules are cleared before adding this batch.
+  """
+  def batch_rules(index, batch, opts \\ []) do
+    body = Jason.encode!(batch)
+
+    :write
+    |> send_request(%{method: :post, path: Paths.batch_rules(index, opts), body: body})
     |> inject_index_into_response(index)
   end
 
