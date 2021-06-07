@@ -1,6 +1,6 @@
 defmodule Algolia do
   @moduledoc """
-  Elixir implementation of Algolia search API, using Hackney for http requests
+  Elixir implementation of Algolia search API, using `Hackney` for HTTP requests.
   """
 
   alias Algolia.Paths
@@ -76,7 +76,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Search a single index
+  Search a single index.
   """
   def search(index, query, opts \\ []) do
     {request_options, opts} = Keyword.pop(opts, :request_options)
@@ -87,7 +87,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Search for facet values
+  Search for facet values.
 
   Enables you to search through the values of a facet attribute, selecting
   only a **subset of those values that meet a given criteria**.
@@ -131,6 +131,7 @@ defmodule Algolia do
           "processingTimeMS" => 42
         }
       }
+
   """
   @spec search_for_facet_values(binary, binary, binary, map) ::
           {:ok, map} | {:error, code :: integer, message :: binary}
@@ -195,7 +196,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Get an object in an index by objectID
+  Get an object in an index by objectID.
   """
   def get_object(index, object_id, opts \\ []) do
     path = Paths.object(index, object_id)
@@ -206,7 +207,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Add an Object
+  Add an Object.
 
   An attribute can be chosen as the objectID.
   """
@@ -224,7 +225,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Add multiple objects
+  Add multiple objects.
 
   An attribute can be chosen as the objectID.
   """
@@ -240,7 +241,7 @@ defmodule Algolia do
 
   @doc """
   Save a single object, without objectID specified, must have objectID as
-  a field
+  a field.
   """
   def save_object(index, object, opts \\ [])
 
@@ -276,7 +277,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Save multiple objects
+  Save multiple objects.
   """
   def save_objects(index, objects, opts \\ [id_attribute: :objectID]) when is_list(objects) do
     id_attribute = opts[:id_attribute] || :objectID
@@ -288,7 +289,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Partially updates an object, takes option upsert: true or false
+  Partially updates an object, takes option upsert: true or false.
   """
   def partial_update_object(index, object, object_id, opts \\ [upsert?: true]) do
     body = Jason.encode!(object)
@@ -300,7 +301,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Partially updates multiple objects
+  Partially updates multiple objects.
   """
   def partial_update_objects(index, objects, opts \\ [upsert?: true, id_attribute: :objectID]) do
     id_attribute = opts[:id_attribute] || :objectID
@@ -368,7 +369,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Delete a object by its objectID
+  Delete a object by its objectID.
   """
   def delete_object(index, object_id, opts \\ [])
 
@@ -385,7 +386,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Delete multiple objects
+  Delete multiple objects.
   """
   def delete_objects(index, object_ids, opts \\ []) do
     object_ids
@@ -412,6 +413,7 @@ defmodule Algolia do
 
       iex> Algolia.delete_by("index", filters: ["score < 30"])
       {:ok, %{"indexName" => "index", "taskId" => 42, "deletedAt" => "2018-10-30T15:33:13.556Z"}}
+
   """
   def delete_by(index, opts) when is_list(opts) do
     {request_options, opts} = Keyword.pop(opts, :request_options)
@@ -446,14 +448,14 @@ defmodule Algolia do
   defp validate_delete_by_opts!(opts), do: opts
 
   @doc """
-  List all indexes
+  List all indexes.
   """
   def list_indexes do
     send_request(:read, %{method: :get, path: Paths.indexes()})
   end
 
   @doc """
-  Deletes the index
+  Deletes the index.
   """
   def delete_index(index) do
     :write
@@ -462,7 +464,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Clears all content of an index
+  Clears all content of an index.
   """
   def clear_index(index) do
     :write
@@ -471,7 +473,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Set the settings of a index
+  Set the settings of a index.
   """
   def set_settings(index, settings) do
     body = Jason.encode!(settings)
@@ -483,7 +485,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Get the settings of a index
+  Get the settings of a index.
   """
   def get_settings(index) do
     :read
@@ -492,7 +494,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Moves an index to new one
+  Moves an index to new one.
   """
   def move_index(src_index, dst_index) do
     body = Jason.encode!(%{operation: "move", destination: dst_index})
@@ -503,7 +505,7 @@ defmodule Algolia do
   end
 
   @doc """
-  Copies an index to a new one
+  Copies an index to a new one.
   """
   def copy_index(src_index, dst_index) do
     body = Jason.encode!(%{operation: "copy", destination: dst_index})
@@ -540,8 +542,9 @@ defmodule Algolia do
   end
 
   @doc """
-  Wait for a task for an index to complete
-  returns :ok when it's done
+  Wait for a task for an index to complete.
+
+  Returns `:ok` when it's done.
   """
   def wait_task(index, task_id, time_before_retry \\ 1000) do
     case send_request(:write, %{method: :get, path: Paths.task(index, task_id)}) do
@@ -558,8 +561,10 @@ defmodule Algolia do
   end
 
   @doc """
-  Convinient version of wait_task/4, accepts a response to be waited on
-  directly. This enables piping a operation directly into wait_task
+  Convenient version of `wait_task/4`, accepts a response to be waited on
+  directly.
+
+  This enables piping a operation directly into `wait_task/4`.
   """
   def wait(response = {:ok, %{"indexName" => index, "taskID" => task_id}}, time_before_retry) do
     with :ok <- wait_task(index, task_id, time_before_retry), do: response

@@ -1,61 +1,81 @@
-## Algolia
+# Algolia
 
 [![Build Status](https://semaphoreci.com/api/v1/sikanhe/algolia-elixir/branches/master/badge.svg)](https://semaphoreci.com/sikanhe/algolia-elixir)
 [![Inline docs](http://inch-ci.org/github/sikanhe/algolia-elixir.svg?branch=master)](http://inch-ci.org/github/sikanhe/algolia-elixir)
+[![Module Version](https://img.shields.io/hexpm/v/algolia.svg)](https://hex.pm/packages/algolia)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/algolia/)
+[![Total Download](https://img.shields.io/hexpm/dt/algolia.svg)](https://hex.pm/packages/algolia)
+[![License](https://img.shields.io/hexpm/l/algolia.svg)](https://github.com/sikanhe/algolia-elixir/blob/master/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/sikanhe/algolia-elixir.svg)](https://github.com/sikanhe/algolia-elixir/commits/master)
 
-This is the elixir implementation of Algolia search API, it is purely functional
+This is the Elixir implementation of Algolia search API, it is purely
+functional.
 
-Add to your dependencies
+## Installation
 
+Add `:algolia` to your dependencies:
 
 ```elixir
-  defp deps do
-    [{:algolia, "~> 0.8.0"}]
-  end
+defp deps do
+  [
+    {:algolia, "~> 0.8.0"}
+  ]
+end
 ```
 
-(Pre-Elixir-1.4) Add :algolia to your applications
+Add `:algolia` to your applications for Elixir version before 1.4:
 
 ```elixir
-  def application do
-    [applications: [:algolia]]
-  end
+def application do
+  [
+    applications: [:algolia]
+  ]
+end
 ```
 
 ## Configuration
 
-#### Using environment variables:
+### Using environment variables:
 
-    ALGOLIA_APPLICATION_ID=YOUR_APPLICATION_ID
-    ALGOLIA_API_KEY=YOUR_API_KEY
+```bash
+ALGOLIA_APPLICATION_ID=YOUR_APPLICATION_ID
+ALGOLIA_API_KEY=YOUR_API_KEY
+```
 
-#### Using config:
+### Using config:
 
-    config :algolia,
-      application_id: YOUR_APPLICATION_ID,
-      api_key: YOUR_API_KEY
+NOTE: You must use `ADMIN API_KEY` instead of `SEARCH API_KEY` to enable write
+access.
 
-*NOTE: You must use ADMIN API_KEY instead of SEARCH API_KEY to enable write access*
+```elixir
+config :algolia,
+  application_id: YOUR_APPLICATION_ID,
+  api_key: YOUR_API_KEY
+```
 
 ## The Client
 
-You don't need to initiate an index with this client unlike other OO Algolia clients.
-However, Most of the client search/write functions all use the syntax
+You don't need to initiate an index with this client unlike other OO Algolia
+clients.  However, Most of the client search/write functions all use the
+syntax:
 
-    operation(index, args....)
+```elixir
+operation(index, args....)
+```
 
-So you can easy emulate the index.function() syntax using piping
+So you can easy emulate the `index.function()` syntax using piping:
 
-   "my_index" |> operation(args)
-
+```elixir
+"my_index" |> operation(args)
+```
 
 ### Return values
 
-All functions are serialized into maps before returning these responses
+All functions are serialized into maps before returning these responses:
 
-  - `{:ok, response}`
-  - `{:error, error_code, response}`
-  - `{:error, "Cannot connect to Algolia"}`: The client implements retry
+  * `{:ok, response}`
+  * `{:error, error_code, response}`
+  * `{:error, "Cannot connect to Algolia"}`: The client implements retry
       strategy on all Algolia hosts with increasing timeout, It should only
       return this error when it has tried all 4 hosts.
       [**More Details here**](https://www.algolia.com/doc/rest#quick-reference).
@@ -67,13 +87,13 @@ All functions are serialized into maps before returning these responses
 #### Searching an index
 
 ```elixir
-    "my_index" |> search("some query")
+"my_index" |> search("some query")
 ```
 
 With Options
 
 ```elixir
-    "my_index" |> search("some query", [attributesToRetrieve: "firstname", hitsPerPage: 20])
+"my_index" |> search("some query", [attributesToRetrieve: "firstname", hitsPerPage: 20])
 ```
 
 See all available search options [**here**](https://www.algolia.com/doc/rest#full-text-search-parameters)
@@ -81,9 +101,9 @@ See all available search options [**here**](https://www.algolia.com/doc/rest#ful
 #### Multiple queries at once
 
 ```elixir
-    multi([%{index_name => "my_index1", query: "search query"},
-            %{index_name => "my_index2", query: "another query", hitsPerPage: 3,},
-            %{index_name => "my_index3", query: "3rd query", tagFilters: "promotion"}])
+multi([%{index_name => "my_index1", query: "search query"},
+        %{index_name => "my_index2", query: "another query", hitsPerPage: 3,},
+        %{index_name => "my_index3", query: "3rd query", tagFilters: "promotion"}])
 ```
 
 You can specify a strategy to optimize your multiple queries
@@ -91,138 +111,137 @@ You can specify a strategy to optimize your multiple queries
 - `stop_if_enough_matches`: Execute the sequence of queries until the number of hits is reached by the sum of hits.
 
 ```elixir
-    multi([query1, query2], strategy: :stop_if_enough_matches)
+multi([query1, query2], strategy: :stop_if_enough_matches)
 ```
 
 ### Saving
 
-All `save_*` operations will overrides the object at the objectID
+All `save_*` operations will overrides the object at the objectID.
 
 Save a single object to index without specifying objectID, must have objectID
-inside object, or use the `id_attribute` option (see below)
+inside object, or use the `id_attribute` option (see below):
 
 ```elixir
-    "my_index" |> save_object(%{objectID: "1"})
+"my_index" |> save_object(%{objectID: "1"})
 ```
 
-Save a single object with a given objectID
+Save a single object with a given objectID:
 
 ```elixir
-    "my_index" |> save_object(%{title: "hello"}, "12345")
+"my_index" |> save_object(%{title: "hello"}, "12345")
 ```
 
-Save multiple objects to an index
+Save multiple objects to an index:
 
 ```elixir
-    "my_index" |> save_objects([%{objectID: "1"}, %{objectID: "2"}])
+"my_index" |> save_objects([%{objectID: "1"}, %{objectID: "2"}])
 ```
 
 ### Updating
 
-Partially updates a single object
+Partially updates a single object:
 
 ```elixir
-    "my_index" |> partial_update_object(%{title: "hello"}, "12345")
+"my_index" |> partial_update_object(%{title: "hello"}, "12345")
 ```
 
-Update multiple objects, must have objectID in each object, or use the `id_attribute` option (see below)
-
+Update multiple objects, must have objectID in each object, or use the
+`id_attribute` option, see below:
 
 ```elixir
-    "my_index" |> partial_update_objects([%{objectID: "1"}, %{objectID: "2"}])
+"my_index" |> partial_update_objects([%{objectID: "1"}, %{objectID: "2"}])
 ```
 
 Partial update by default creates a new object if an object does not exist at the
-objectID, you can turn this off by passing `false` to the `:upsert?` option
+objectID, you can turn this off by passing `false` to the `:upsert?` option:
 
 ```elixir
-    "my_index" |> partial_update_object(%{title: "hello"}, "12345", upsert?: false)
-    "my_index" |> partial_update_objects([%{id: "1"}, %{id: "2"}], id_attribute: :id, upsert?: false)
+"my_index" |> partial_update_object(%{title: "hello"}, "12345", upsert?: false)
+"my_index" |> partial_update_objects([%{id: "1"}, %{id: "2"}], id_attribute: :id, upsert?: false)
 ```
-
 
 ### Bonus for this Elixir client only: `id_attribute` option
 
-All write functions such as `save_object` and `partial_update_object` comes with an `id_attribute` option that lets the you specifying an objectID from an existing field in the object, so you do not
-have to generate it yourself
+All write functions such as `save_object` and `partial_update_object` comes
+with an `id_attribute` option that lets the you specifying an objectID from an
+existing field in the object, so you do not have to generate it yourself:
 
 ```elixir
-    "my_index" |> save_object(%{id: "2"}, id_attribute: :id)
+"my_index" |> save_object(%{id: "2"}, id_attribute: :id)
 ```
 
-It also works for batch operations, such as `save_objects` and `partial_update_objects`
+It also works for batch operations, such as `save_objects` and
+`partial_update_objects`:
 
 ```elixir
-    "my_index" |> save_objects([%{id: "1"}, %{id: "2"}], id_attribute: :id)
+"my_index" |> save_objects([%{id: "1"}, %{id: "2"}], id_attribute: :id)
 ```
 
-However, this cannot be used together with an ID specifying argument together
+However, this cannot be used together with an ID specifying argument together:
 
 ```elixir
-    "my_index" |> save_object(%{id: "1234"}, "1234", id_attribute: :id)
-    > Error
+"my_index" |> save_object(%{id: "1234"}, "1234", id_attribute: :id)
+> Error
 ```
 
 ### Wait for task
 
-All write operations can be waited on by simply piping the response into wait/1
+All write operations can be waited on by simply piping the response into `wait/1`:
 
 ```elixir
-    "my_index" |> save_object(%{id: "123"}) |> wait
+"my_index" |> save_object(%{id: "123"}) |> wait
 ```
 
-
-Since the client polls the server to check for publishing status,
-You can specify a time between each tick of the poll, the default is 1000 ms
+Since the client polls the server to check for publishing status, You can
+specify a time between each tick of the poll, the default is 1000 ms:
 
 ```elixir
-    "my_index" |> save_object(%{id: "123"}) |> wait(2_000)
+"my_index" |> save_object(%{id: "123"}) |> wait(2_000)
 ```
 
-You can also use the underlying wait_task function explicitly
-
+You can also use the underlying wait_task function explicitly:
 
 ```elixir
-    {:ok, %{"taskID" => task_id, "indexName" => index}}
-      = "my_index" |> save_object(%{id: "123"}
+  {:ok, %{"taskID" => task_id, "indexName" => index}}
+    = "my_index" |> save_object(%{id: "123"}
 
-    wait(index, task_id)
+  wait(index, task_id)
 ```
 
-or with option
+or with option:
 
 ```elixir
-    wait(index, task_id, 2_000)
+wait(index, task_id, 2_000)
 ```
 
 ### Index related operations
 
 #### Listing all indexes
 
- ```elixir
-    list_indexes()
- ```
+```elixir
+list_indexes()
+```
 
 #### move_index/2
 
-Moves an index to a new one
+Moves an index to a new one:
 
 ```elixir
-   move_index(source_index, destination_index)
+move_index(source_index, destination_index)
 ```
 
 #### copy_index/2
 
-Copies an index to a new one
+Copies an index to a new one:
 
 ```elixir
-    copy_index(source_index, destination_index)
+copy_index(source_index, destination_index)
 ```
 
 #### Clear an index
 
 ```elixir
-    clear_index(index)
+clear_index(index)
 ```
 
 ### Settings
@@ -230,10 +249,10 @@ Copies an index to a new one
 #### get_settings/1
 
 ```elixir
-    get_settings(index)
+get_settings(index)
 ```
 
-Example response
+Example response:
 
 ```elixir
 {:ok,
@@ -262,13 +281,13 @@ Example response
 #### set_settings/2
 
 ```elixir
-    set_settings(index, %{"hitsPerPage" => 20})
+set_settings(index, %{"hitsPerPage" => 20})
 
-     > %{"updatedAt" => "2013-08-21T13:20:18.960Z",
-        "taskID" => 10210332.
-        "indexName" => "my_index"}
+> %{"updatedAt" => "2013-08-21T13:20:18.960Z",
+  "taskID" => 10210332.
+  "indexName" => "my_index"}
 ```
-### TODOS:
+## TODOS
 
 - [x] get_object
 - [x] save_object
@@ -289,3 +308,18 @@ Example response
 - [ ] add_user_key
 - [ ] update_user_key
 - [ ] delete_user_key
+
+## Copyright and License
+
+Copyright (c) 2016 Sikan He
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
