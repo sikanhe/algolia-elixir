@@ -372,7 +372,8 @@ defmodule Algolia do
   """
   def delete_object(index, object_id, opts \\ [])
 
-  def delete_object(_index, "", _request_options) do
+  def delete_object(_index, object_id, _request_options)
+      when is_nil(object_id) or object_id == "" do
     {:error, %InvalidObjectIDError{}}
   end
 
