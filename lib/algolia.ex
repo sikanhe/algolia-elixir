@@ -3,6 +3,7 @@ defmodule Algolia do
   Elixir implementation of Algolia search API, using Hackney for http requests
   """
 
+  alias Algolia.Config
   alias Algolia.Paths
 
   defmodule MissingApplicationIDError do
@@ -29,21 +30,10 @@ defmodule Algolia do
     defexception message: "The ObjectID cannot be an empty string"
   end
 
-  def application_id do
-    System.get_env("ALGOLIA_APPLICATION_ID") || Application.get_env(:algolia, :application_id) ||
-      raise MissingApplicationIDError
-  end
+  defdelegate application_id, to: Algolia.Config, as: :application_id_from_env!
 
-  def api_key do
-    System.get_env("ALGOLIA_API_KEY") || Application.get_env(:algolia, :api_key) ||
-      raise MissingAPIKeyError
-  end
+  defdelegate api_key, to: Algolia.Config, as: :api_key_from_env!
 
-  defp host(:read, 0), do: "#{application_id()}-dsn.algolia.net"
-  defp host(:write, 0), do: "#{application_id()}.algolia.net"
-
-  defp host(_read_or_write, curr_retry) when curr_retry <= 3,
-    do: "#{application_id()}-#{curr_retry}.algolianet.com"
 
   @doc """
   Multiple queries
@@ -153,8 +143,10 @@ defmodule Algolia do
   end
 
   defp send_request(read_or_write, request, curr_retry) do
-    url = request_url(read_or_write, curr_retry, request[:path])
-    headers = request_headers(request[:options] || [])
+    config = default_config()
+
+    url = request_url(config, read_or_write, curr_retry, request[:path])
+    headers = request_headers(config, request[:options] || [])
     body = request[:body] || ""
 
     request[:method]
@@ -177,18 +169,18 @@ defmodule Algolia do
     end
   end
 
-  defp request_url(read_or_write, retry, path) do
-    "https://"
-    |> Path.join(host(read_or_write, retry))
-    |> Path.join(path)
+  defp request_url(config, read_or_write, retry, path) do
+    base_url = config.base_url_fn.(read_or_write, config.application_id, retry)
+
+    Path.join(base_url, path)
   end
 
-  defp request_headers(request_options) do
+  defp request_headers(config, request_options) do
     custom = request_options[:headers] || []
 
     default = [
-      {"X-Algolia-API-Key", api_key()},
-      {"X-Algolia-Application-Id", application_id()}
+      {"X-Algolia-API-Key", config.api_key},
+      {"X-Algolia-Application-Id", config.application_id}
     ]
 
     custom ++ default
@@ -568,4 +560,6 @@ defmodule Algolia do
   def wait(response = {:ok, _}), do: wait(response, 1000)
   def wait(response = {:error, _}), do: response
   def wait(response), do: response
+
+  defp default_config, do: Config.new()
 end
