@@ -561,7 +561,7 @@ defmodule Algolia do
   Copies an index to a new one
   """
   def copy_index(src_index, dst_index, opts \\ []) do
-    {config, opts} = Keyword.pop_lazy(opts, :config, &default_config/0)
+    {config, _opts} = Keyword.pop_lazy(opts, :config, &default_config/0)
     body = Jason.encode!(%{operation: "copy", destination: dst_index})
 
     config
