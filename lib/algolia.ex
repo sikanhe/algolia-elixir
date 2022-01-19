@@ -146,8 +146,7 @@ defmodule Algolia do
     send_request(config, :read, %{method: :post, path: path, body: body})
   end
 
-  # TODO remove \\ default_config()
-  defp send_request(config \\ default_config(), read_or_write, request, curr_retry \\ 0)
+  defp send_request(config, read_or_write, request, curr_retry \\ 0)
 
   defp send_request(%Config{}, _read_or_write, _request, 4) do
     {:error, "Unable to connect to Algolia"}
@@ -282,8 +281,13 @@ defmodule Algolia do
     body = Jason.encode!(object)
     path = Paths.object(index, object_id)
 
-    :write
-    |> send_request(%{method: :put, path: path, body: body, options: opts[:request_options]})
+    config
+    |> send_request(:write, %{
+      method: :put,
+      path: path,
+      body: body,
+      options: opts[:request_options]
+    })
     |> inject_index_into_response(index)
   end
 
@@ -304,11 +308,17 @@ defmodule Algolia do
   Partially updates an object, takes option upsert: true or false
   """
   def partial_update_object(index, object, object_id, opts \\ [upsert?: true]) do
+    {config, opts} = Keyword.pop_lazy(opts, :config, &default_config/0)
     body = Jason.encode!(object)
     path = Paths.partial_object(index, object_id, opts[:upsert?])
 
-    :write
-    |> send_request(%{method: :post, path: path, body: body, options: opts[:request_options]})
+    config
+    |> send_request(:write, %{
+      method: :post,
+      path: path,
+      body: body,
+      options: opts[:request_options]
+    })
     |> inject_index_into_response(index)
   end
 
@@ -514,7 +524,7 @@ defmodule Algolia do
     body = Jason.encode!(settings)
     path = Paths.settings(index)
 
-    opts
+    config
     |> send_request(:write, %{
       method: :put,
       path: path,
@@ -554,7 +564,7 @@ defmodule Algolia do
     {config, opts} = Keyword.pop_lazy(opts, :config, &default_config/0)
     body = Jason.encode!(%{operation: "copy", destination: dst_index})
 
-    opts
+    config
     |> send_request(:write, %{method: :post, path: Paths.operation(src_index), body: body})
     |> inject_index_into_response(src_index)
   end
