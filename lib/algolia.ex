@@ -42,7 +42,9 @@ defmodule Algolia do
   defp host(:read, 0), do: "#{application_id()}-dsn.algolia.net"
   defp host(:write, 0), do: "#{application_id()}.algolia.net"
 
-  defp host(_read_or_write, curr_retry) when curr_retry <= 3,
+  defp host(:insights, _curr_retry), do: "insights.algolia.io"
+
+  defp host(_subdomain_hint, curr_retry) when curr_retry <= 3,
     do: "#{application_id()}-#{curr_retry}.algolianet.com"
 
   @doc """
@@ -146,14 +148,14 @@ defmodule Algolia do
     send_request(:read, %{method: :post, path: path, body: body})
   end
 
-  defp send_request(read_or_write, request, curr_retry \\ 0)
+  defp send_request(subdomain_hint, request, curr_retry \\ 0)
 
-  defp send_request(_read_or_write, _request, 4) do
+  defp send_request(_subdomain_hint, _request, 4) do
     {:error, "Unable to connect to Algolia"}
   end
 
-  defp send_request(read_or_write, request, curr_retry) do
-    url = request_url(read_or_write, curr_retry, request[:path])
+  defp send_request(subdomain_hint, request, curr_retry) do
+    url = request_url(subdomain_hint, curr_retry, request[:path])
     headers = request_headers(request[:options] || [])
     body = request[:body] || ""
 
@@ -173,13 +175,13 @@ defmodule Algolia do
         {:error, code, response}
 
       _ ->
-        send_request(read_or_write, request, curr_retry + 1)
+        send_request(subdomain_hint, request, curr_retry + 1)
     end
   end
 
-  defp request_url(read_or_write, retry, path) do
+  defp request_url(subdomain_hint, retry, path) do
     "https://"
-    |> Path.join(host(read_or_write, retry))
+    |> Path.join(host(subdomain_hint, retry))
     |> Path.join(path)
   end
 
@@ -568,4 +570,18 @@ defmodule Algolia do
   def wait(response = {:ok, _}), do: wait(response, 1000)
   def wait(response = {:error, _}), do: response
   def wait(response), do: response
+
+  @doc """
+  Push events to the Insights REST API.
+  Corresponds to https://www.algolia.com/doc/rest-api/insights/#push-events
+  `events` should be a List of Maps, each Map having the fields described in the link above
+  """
+  def push_events(events) do
+    body = Jason.encode!(%{"events" => events})
+
+    send_request(
+      :insights,
+      %{method: :post, path: "1/events", body: body}
+    )
+  end
 end
