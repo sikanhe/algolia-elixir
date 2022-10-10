@@ -22,13 +22,14 @@ defmodule Algolia.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :hackney]]
+    [applications: [:logger, :hackney, :telemetry]]
   end
 
   defp deps do
     [
       {:hackney, "~> 1.10"},
       {:jason, "~> 1.0"},
+      {:telemetry, "~> 1.0"},
       # Docs
       {:ex_doc, "~> 0.19", only: :dev},
       {:inch_ex, ">= 0.0.0", only: :dev}

@@ -85,7 +85,16 @@ defmodule Algolia do
 
     path = Paths.search(index, query, opts)
 
-    send_request(:read, %{method: :get, path: path, options: request_options})
+    with {:ok, %{} = data} <-
+           send_request(:read, %{method: :get, path: path, options: request_options}) do
+      :telemetry.execute(
+        [:algolia, :search, :result],
+        %{hits: data["nbHits"], processing_time: data["processingTimeMS"]},
+        %{query: query, index: index, options: opts}
+      )
+
+      {:ok, data}
+    end
   end
 
   @doc """
@@ -148,13 +157,33 @@ defmodule Algolia do
     send_request(:read, %{method: :post, path: path, body: body})
   end
 
-  defp send_request(subdomain_hint, request, curr_retry \\ 0)
+  defp send_request(subdomain_hint, request) do
+    start_metadata = %{request: request, subdomain_hint: subdomain_hint}
 
-  defp send_request(_subdomain_hint, _request, 4) do
-    {:error, "Unable to connect to Algolia"}
+    :telemetry.span([:algolia, :request], start_metadata, fn ->
+      {result, stop_metadata} =
+        case do_send_request(subdomain_hint, request) do
+          {:ok, result, retries} ->
+            {{:ok, result}, %{success: true, result: result, retries: retries}}
+
+          {:error, error, retries} ->
+            {{:error, error}, %{success: false, error: error, retries: retries}}
+
+          {:error, code, error, retries} ->
+            {{:error, code, error}, %{success: false, error: error, retries: retries}}
+        end
+
+      {result, Map.merge(start_metadata, stop_metadata)}
+    end)
   end
 
-  defp send_request(subdomain_hint, request, curr_retry) do
+  defp do_send_request(subdomain_hint, request, curr_retry \\ 0)
+
+  defp do_send_request(_subdomain_hint, _request, 4) do
+    {:error, "Unable to connect to Algolia", 4}
+  end
+
+  defp do_send_request(subdomain_hint, request, curr_retry) do
     url = request_url(subdomain_hint, curr_retry, request[:path])
     headers = request_headers(request[:options] || [])
     body = request[:body] || ""
@@ -168,13 +197,13 @@ defmodule Algolia do
     ])
     |> case do
       {:ok, code, _headers, response} when code in 200..299 ->
-        {:ok, Jason.decode!(response)}
+        {:ok, Jason.decode!(response), curr_retry}
 
       {:ok, code, _, response} ->
-        {:error, code, response}
+        {:error, code, response, curr_retry}
 
       _ ->
-        send_request(subdomain_hint, request, curr_retry + 1)
+        do_send_request(subdomain_hint, request, curr_retry + 1)
     end
   end
 
